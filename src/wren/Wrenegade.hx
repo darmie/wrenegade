@@ -217,6 +217,8 @@ class Wrenegade {
 		include.add("\n");
 		include.add('WrenForeignMethodFn bindMethod(const char* signature);');
 		include.add("\n");
+		include.add("void bindClass(const char* className, WrenForeignClassMethods* methods);");
+		include.add("\n");
 		include.add("#endif");
 		sys.io.File.saveContent('bindings/c/inc.h', include.toString());
 	}

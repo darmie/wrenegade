@@ -7,4 +7,5 @@ extern "C"
 #include <../lib/wren/src/include/wren.h>
 }
 WrenForeignMethodFn bindMethod(const char* signature);
+void bindClass(const char* className, WrenForeignClassMethods* methods);
 #endif
