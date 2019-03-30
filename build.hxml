@@ -1,6 +1,7 @@
 -cp src/
 -cp test/
-#-lib linc_wren
--main test.Test
+-dce no
+# -lib linc_wren
+-main Test
 
 --interp

@@ -6,6 +6,6 @@ package wren;
 @:keepSub
 class WrenClass {
     public static function constructor():Dynamic{
-        return {};
+        return WrenClass;
     }
 }
