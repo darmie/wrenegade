@@ -9,7 +9,7 @@ class Test extends wren.WrenClass {
         return {};
     }
 
-    override static public function add(c:Dynamic, x:Int, y:Int):Int {
+    static public function add(c:Dynamic, x:Int, y:Int):Int {
         return x+y;
     }
 }

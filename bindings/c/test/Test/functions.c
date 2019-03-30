@@ -4,7 +4,7 @@ static void test_test_add(WrenVM *vm);{
 	::Dynamic arg0 = (::Dynamic) wrenGetSlotForeign(vm, 0);
 	auto arg1 = linc::wren::getFromSlot(vm, 1);
 	auto arg2 = linc::wren::getFromSlot(vm, 2);
-	test::Test::add(arg0, arg1, arg2);
+	::test::Test::add(arg0, arg1, arg2);
 }
 
 

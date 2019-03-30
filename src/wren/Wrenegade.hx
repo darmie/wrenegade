@@ -29,7 +29,6 @@ class Wrenegade {
 		bindMethodMap = new Map();
 		bindCMethodMap = new Map();
 
-		// trace(Context.getBuildFields());
 		createPath(Context.getLocalModule());
 		createBindInclude();
 		return null;
@@ -46,16 +45,15 @@ class Wrenegade {
 	private static function createBindInclude() {
 		var fields:Array<Field> = Context.getBuildFields();
 		for (field in fields) {
-			// trace(field);
-			// trace(field.kind);
+
 
 			switch (field.kind) {
 				case FFun(f):
 					{
-						// trace(f);
 						var params = [];
 						var signature = bindCPath.replace("bindings/c/", "").split("/").join(".");
-						var cFuncName = bindCPath.replace("bindings/c/", "").split("/").join("::");
+						var cFuncName = "::";
+						cFuncName += bindCPath.replace("bindings/c/", "").split("/").join("::");
 						cFuncName += "::";
 						cFuncName += field.name;
 						signature += ".";
@@ -137,10 +135,6 @@ class Wrenegade {
 							case _:
 						}
 
-						// trace(f.args);
-
-						// trace(bindMethodMap);
-						// trace(bindSignatureMap);
 					}
 				case _:
 			}
@@ -208,7 +202,6 @@ class Wrenegade {
 		include.add('WrenForeignMethodFn ${moduleName.split(".").join("_").toLowerCase()}_bindMethod(const char* signature);');
 		include.add("\n");
 		include.add("#endif");
-		sys.io.File.saveContent('${bindCPath}/inc.h', include.toString());
-		
+		sys.io.File.saveContent('${bindCPath}/inc.h', include.toString());	
 	}
 }
