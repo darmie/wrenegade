@@ -1,0 +1,45 @@
+
+<xml>
+    <set name="WREN" value="${LINC_WREN_PATH}/lib/wren" />
+
+    <files id='haxe'>
+        <compilerflag value='-I${LINC_WREN_PATH}/bindings'/>
+        <compilerflag value='-I${LINC_WREN_PATH}/linc'/>
+        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren'/>
+
+        <file name='${LINC_WREN_PATH}/linc/linc_wren.cpp' />
+
+    </files>
+
+    <files id="wren">
+
+        <compilerflag value='-I${LINC_WREN_PATH}/linc'/>
+        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren'/>
+        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren/src/include'/>
+        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren/src/vm'/>
+        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren/src/optional'/>
+        <compilerflag value="-I${WREN}"/>
+
+        <!-- <compilerflag value="-DWREN_OPT_META"/> -->
+        <!-- <compilerflag value="-DWREN_OPT_RANDOM"/> -->
+        <!-- <compilerflag value='-DMODE=debug'> -->
+
+        <file name="${WREN}/src/vm/wren_vm.c" />
+        <file name="${WREN}/src/vm/wren_compiler.c" />
+        <file name="${WREN}/src/vm/wren_core.c" />
+        <file name="${WREN}/src/vm/wren_debug.c" />
+        <file name="${WREN}/src/vm/wren_primitive.c" />
+        <file name="${WREN}/src/vm/wren_utils.c" />
+        <file name="${WREN}/src/vm/wren_value.c" />
+
+        <file name="${WREN}/src/optional/wren_opt_meta.c" />
+        <file name="${WREN}/src/optional/wren_opt_random.c" />
+
+    </files>
+
+
+    <target id="haxe">
+        <files id="wren" />
+    </target>
+
+</xml>
