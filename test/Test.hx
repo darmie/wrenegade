@@ -10,7 +10,7 @@ class Test extends wren.WrenClass {
             foreign add(x, y)
         }
         var test = Test.new()
-        test.add(5, 3)';
+        test.add(5, 20)';
 		var vm = new VM();
 		try {
 			var err = vm.interpret("main", program);
