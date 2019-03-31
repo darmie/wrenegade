@@ -89,11 +89,7 @@ class Wrenegade {
 							for (i in 0..._args.length) {
 								var arg = _args[i];
 								if (arg != null) {
-									// if (_args.indexOf(arg) == 0)
-									// 	cFuncName += '(::Dynamic*) arg${_args.indexOf(arg)}';
-									// if (_args.indexOf(arg) > 0)
 									cFuncName += 'arg${_args.indexOf(arg)}';
-
 									signature += "_";
 									params.push('arg${_args.indexOf(arg)}');
 
@@ -104,10 +100,6 @@ class Wrenegade {
 								}
 							}
 							cFuncName += ")";
-							// if (signature.split(",").length > 1) {
-							// 	signature = signature.split(",").slice(0, signature.split(",").length - 1).join(",");
-							// }
-
 							signature += ")";
 						} else {
 							cFuncName += "()";
@@ -194,18 +186,11 @@ class Wrenegade {
 			content.add("{");
 			content.add("\n");
 			content.add("\t");
-			// content.add('auto ${params[0]} =  wrenGetSlotForeign(vm, 0);');
-			// content.add("\n");
-			// content.add("\t");
-			// content.add('::Dynamic ${params[0]} = (::Dynamic) ::cpp::CreateDynamicPointer(value);');
 			content.add("\n");
 			for (i in 0...params.length) {
 				content.add("\t");
 				content.add('auto ${params[i]} = ::wren::Helper_obj::getFromSlot(vm, ${i + 1});');
 				content.add("\n");
-				// content.add("\t");
-				// content.add('::Dynamic ${params[i]} = (::Dynamic) ::cpp::CreateDynamicPointer(value_${params[i]});');
-				// content.add("\n");
 			}
 			content.add("\t");
 			content.add(bindCMethodMap.get(sig));
@@ -288,8 +273,6 @@ class Wrenegade {
 		include.add("\n");
 		include.add('#include <hxcpp.h>');
 		include.add("\n");
-		// include.add('#include "../../linc/linc_wren.h"');
-		// include.add("\n");
 		include.add('extern "C"');
 		include.add("\n");
 		include.add('{');
