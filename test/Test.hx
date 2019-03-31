@@ -2,34 +2,57 @@ import MyClass;
 import wren.VM;
 
 class Test extends wren.WrenClass {
-	public static var initializer:Dynamic = {};
+	@:keep public static var initializer:Dynamic = {
+		hello: "world"
+	};
 
 	public static function main() {
-		var program:String = 'foreign class Test {
-            construct new() {}
-            foreign add(x, y)
+        runStatic();
+        runInstance();
+    }
+
+	private static function runStatic() {
+		var program:String = '
+        foreign class Test {
+            foreign static add(x, y)
         }
-        var test = Test.new()
-        test.add(5, 20)';
+        Test.add(5, 20)';
 		var vm = new VM();
 		try {
 			var err = vm.interpret("main", program);
 			if (err != null) {
 				throw err;
 			}
-
-			// var val = vm.variable("Bird").call("fly(_)",["Chicago"]);
-			// trace(val);
 		} catch (e:Dynamic) {
 			throw e;
 		}
 	}
 
-	override static public function constructor():Dynamic {
+
+	private static function runInstance() {
+		var program:String = '
+        foreign class MyClass {
+            construct new(){}
+            foreign add(x, y)
+        }
+        var myclass = MyClass.new()
+        myclass.add(5, 40)';
+		var vm = new VM();
+		try {
+			var err = vm.interpret("main", program);
+			if (err != null) {
+				throw err;
+			}
+		} catch (e:Dynamic) {
+			throw e;
+		}
+	}
+
+	static public function init():Dynamic {
 		return initializer;
 	}
 
-	static public function add(c:Dynamic, x:Dynamic, y:Dynamic) {
+	static public function add(x:Dynamic, y:Dynamic) {
 		trace(x + y);
 	}
 }

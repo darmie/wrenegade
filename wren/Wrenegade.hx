@@ -31,28 +31,6 @@ class Wrenegade {
 	macro static public function bind():Array<Field> {
 		moduleName = Context.getLocalClass().toString();
 
-		var _pos =  Context.currentPos();
-		var _pos_info = Context.getPosInfos(_pos);
-		var _class = Context.getLocalClass();
-
-		var _source_path = Path.directory(_pos_info.file);
-		if (!Path.isAbsolute(_source_path)) {
-			_source_path = Path.join([Sys.getCwd(), _source_path]);
-		}
-
-		_source_path = Path.normalize(_source_path);
-
-		// var _buildXml = '<include name="${_source_path}/../linc/linc_wren.xml"/>';
-
-		// var _buildXml = '
-		//  <set name="WREN" value="${_source_path}/../lib/wren" />
-		//  <files id="wrenegade">
-		// 	<compilerflag value="-I${_source_path}/../bindings/c/"/>
-		// 	<file name="${_source_path}/../bindings/c/functions.c" />
-		// </files>
-		// ';
-		// _class.get().meta.add(":buildXml", [{ expr:EConst( CString( '$_buildXml' ) ), pos:_pos }], _pos );
-
 		createPath(Context.getLocalModule());
 		createBindInclude();
 		return null;
@@ -69,17 +47,39 @@ class Wrenegade {
 
 	private static function createBindInclude() {
 		var fields:Array<Field> = Context.getBuildFields();
+
 		for (field in fields) {
 			switch (field.kind) {
 				case FFun(f):
 					{
 						var params = [];
-						var signature = bindCPath.replace("bindings/c/", "").split("/").join(".");
+						var signature = "";
+						switch (field.access) {
+							case [AOverride, AStatic, APublic] | [AStatic, APublic] | [APublic, AStatic]: {
+									signature += "static ";
+								}
+							case _:
+						}
+						signature += bindCPath.replace("bindings/c/", "").split("/").join(".");
 						var cFuncName = "::";
 						cFuncName += bindCPath.replace("bindings/c/", "").split("/").join("::");
-						cFuncName+= "_obj";
+						cFuncName += "_obj";
 						cFuncName += "::";
-						cFuncName += field.name;
+						switch (field.access) {
+							case [APublic]: {
+									if (field.name.trim() != "new") {
+										cFuncName += "getInstance()";
+										cFuncName += "->";
+									}
+								}
+							case _:
+						}
+						if (field.name.trim() != "new") {
+							cFuncName += field.name;
+						} else {
+							cFuncName += "__";
+							cFuncName += field.name;
+						}
 						signature += ".";
 						signature += field.name;
 						signature += "(";
@@ -89,10 +89,10 @@ class Wrenegade {
 							for (i in 0..._args.length) {
 								var arg = _args[i];
 								if (arg != null) {
-									if (_args.indexOf(arg) == 0)
-										cFuncName += 'arg${_args.indexOf(arg)}';
-									if (_args.indexOf(arg) > 0)
-										cFuncName += 'arg${_args.indexOf(arg)}';
+									// if (_args.indexOf(arg) == 0)
+									// 	cFuncName += '(::Dynamic*) arg${_args.indexOf(arg)}';
+									// if (_args.indexOf(arg) > 0)
+									cFuncName += 'arg${_args.indexOf(arg)}';
 
 									signature += "_";
 									params.push('arg${_args.indexOf(arg)}');
@@ -104,9 +104,9 @@ class Wrenegade {
 								}
 							}
 							cFuncName += ")";
-							if (signature.split(",").length > 1) {
-								signature = signature.split(",").slice(0, signature.split(",").length - 1).join(",");
-							}
+							// if (signature.split(",").length > 1) {
+							// 	signature = signature.split(",").slice(0, signature.split(",").length - 1).join(",");
+							// }
 
 							signature += ")";
 						} else {
@@ -118,10 +118,33 @@ class Wrenegade {
 						funcName += field.name;
 						funcName = funcName.toLowerCase();
 						switch (field.access) {
+							case [APublic]: {
+									if (field.name.trim() == "new") {
+										bindClassSignatureMap.set(funcName, signature.split("(")[0].replace(".new", ""));
+										bindCClassMap.set(funcName, cFuncName);
+										bindCClassArgsMap.set(funcName, params);
+										bindSignatureMap.set(funcName, signature);
+
+										var foreignFunc = "static void ";
+										foreignFunc += funcName;
+										foreignFunc += "(WrenVM *vm);";
+										foreignConstructorDec.push(foreignFunc);
+									} else  {
+										bindMethodMap.set(funcName, params);
+										bindCMethodMap.set(funcName, cFuncName);
+										bindSignatureMap.set(funcName, signature);
+
+										var foreignFunc = "static void ";
+										foreignFunc += funcName;
+										foreignFunc += "(WrenVM *vm);";
+										foreignFuncsDec.push(foreignFunc);
+									}
+								}
 							case [AOverride, AStatic, APublic] | [AStatic, APublic] | [APublic, AStatic]: {
-									if (field.name.trim() == "new" || field.name.trim() == "main" || field.name.trim() == "constructor") {
-										if (field.name.trim() == "constructor") {
-											bindClassSignatureMap.set(funcName, signature.split("(")[0].replace(".constructor", ""));
+									if (field.name.trim() == "new" || field.name.trim() == "main" || field.name.trim() == "init") {
+										if (field.name.trim() == "init") {
+											if (field.name.trim() == "init")
+												bindClassSignatureMap.set(funcName, signature.split("(")[0].replace(".init", ""));
 											bindCClassMap.set(funcName, cFuncName);
 											bindCClassArgsMap.set(funcName, params);
 											var foreignFunc = "static void ";
@@ -129,7 +152,7 @@ class Wrenegade {
 											foreignFunc += "(WrenVM *vm);";
 											foreignConstructorDec.push(foreignFunc);
 										}
-									} else {
+									} else if(field.name.trim() != "getInstance") {
 										bindMethodMap.set(funcName, params);
 										bindCMethodMap.set(funcName, cFuncName);
 										bindSignatureMap.set(funcName, signature);
@@ -149,7 +172,6 @@ class Wrenegade {
 
 		var content = new StringBuf();
 
-
 		content.add('#include "../../linc/linc_wren.h"');
 		content.add("\n");
 		content.add('#include "functions.h"');
@@ -157,7 +179,7 @@ class Wrenegade {
 		content.add('#include <wren/Helper.h>');
 		content.add("\n");
 		for (inc in bindClassSignatureMap) {
-			content.add('#include <${inc.replace(".", "/")}.h>');
+			content.add('#include <${inc.replace(".", "/").replace("static ", "")}.h>');
 			content.add("\n");
 		}
 		content.add("namespace bindings {");
@@ -172,18 +194,18 @@ class Wrenegade {
 			content.add("{");
 			content.add("\n");
 			content.add("\t");
-			content.add('auto value =  wrenGetSlotForeign(vm, 0);');
+			// content.add('auto ${params[0]} =  wrenGetSlotForeign(vm, 0);');
+			// content.add("\n");
+			// content.add("\t");
+			// content.add('::Dynamic ${params[0]} = (::Dynamic) ::cpp::CreateDynamicPointer(value);');
 			content.add("\n");
-			content.add("\t");
-			content.add('::Dynamic ${params[0]} = (::Dynamic) ::cpp::CreateDynamicPointer(value);');
-			content.add("\n");
-			for (i in 1...params.length) {
+			for (i in 0...params.length) {
 				content.add("\t");
-				content.add('auto ${params[i]} = ::wren::Helper_obj::getFromSlot(vm, ${i});');
+				content.add('auto ${params[i]} = ::wren::Helper_obj::getFromSlot(vm, ${i + 1});');
 				content.add("\n");
 				// content.add("\t");
 				// content.add('::Dynamic ${params[i]} = (::Dynamic) ::cpp::CreateDynamicPointer(value_${params[i]});');
-				content.add("\n");
+				// content.add("\n");
 			}
 			content.add("\t");
 			content.add(bindCMethodMap.get(sig));
@@ -199,7 +221,10 @@ class Wrenegade {
 			content.add("{");
 			content.add("\n");
 			content.add("\t");
-			content.add("wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));");
+			content.add("cpp::Pointer<::Dynamic> handler = new cpp::Pointer<::Dynamic>();");
+			content.add("\n");
+			content.add("\t");
+			content.add("auto constructor = wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));");
 			content.add("\n");
 			for (i in 0...params.length) {
 				content.add("\t");
@@ -210,8 +235,13 @@ class Wrenegade {
 				content.add("\n");
 			}
 			content.add("\t");
-			content.add(bindCClassMap.get(sig));
-			content.add(";");
+			content.add('auto data = ${bindCClassMap.get(sig)};');
+			content.add("\n");
+			content.add("\t");
+			content.add('&handler.set_ref(data);');
+			content.add("\n");
+			content.add("\t");
+			content.add('constructor = &handler;');
 			content.add("\n");
 			content.add("}");
 			content.add("\n");
@@ -237,8 +267,10 @@ class Wrenegade {
 		content.add("\n");
 		for (func in foreignConstructorDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
+			var funct = bindClassSignatureMap.get(sig);
 			content.add("\t");
-			content.add('if (strcmp(className, "${bindClassSignatureMap.get(sig)}") == 0) { \n\t\tmethods->allocate = ${sig}; \n \t\treturn; \n\t}');
+			content
+				.add('if (strcmp(className, "${funct.indexOf("static") != -1 ? funct.replace("static ", "") : funct}") == 0) { \n\t\tmethods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \t\treturn; \n\t}');
 			content.add("\n");
 		}
 		content.add("}");

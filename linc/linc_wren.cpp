@@ -78,18 +78,8 @@ char *loadModuleFn(WrenVM *vm, const char *mod)
 
 WrenForeignClassMethods bindForeignClass(WrenVM *vm, const char *module, const char *className)
 {
-	// if(strcmp(module, "main") != 0){
-	// 	throw "tried to bind foreign class from non-main module";
-	// }
-
-	// ClassHandler *c = getClass(className);
-
-	// currentClassId = c->id;
-
 	WrenForeignClassMethods holder;
 	holder.finalize = NULL;
-	// holder.allocate = allocator;
-	// return holder;
 	bindings::functions::bindClass(className, &holder);
 
 	return holder;
@@ -105,10 +95,6 @@ WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char
 		fullName << "static ";
 	}
 	fullName << className << "." << signature;
-	// ClassHandler *c = linc::wren::getClass(className);
-	// currentMethod = c->getMethod(signature, isStatic);
-	// printf("method %s called", currentMethod->registry.signature);
-	// return methodCaller;
 	return bindings::functions::bindMethod(fullName.str().c_str());
 };
 

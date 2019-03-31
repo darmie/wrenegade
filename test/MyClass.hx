@@ -1,12 +1,15 @@
 
 class MyClass extends wren.WrenClass {
-    override static public function constructor(x:Dynamic):Dynamic{
-        return {
-            x: x
-        };
+    private static var instance:MyClass;
+    public static function getInstance():MyClass{
+        if(instance == null){
+            instance = new MyClass();
+        }
+        return instance;
     }
+    public function new(){}
 
-    static public function add(c:Dynamic, x:Int, y:Int):Int {
-        return x+y;
+    public function add(x:Int, y:Int) {
+        trace(x+y);
     }
 }
