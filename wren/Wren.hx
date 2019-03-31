@@ -72,22 +72,12 @@ extern class Wren {
 	static function getVariable(vm:WrenVM, module:String, name:String, slot:Int):Void;
 	@:native('wrenAbortFiber')
 	static function abortFiber(vm:WrenVM, slot:Int):Void;
-
-
-	//extra helpers
-	@:native('linc::wren::setClass')
-	static function setClass(name:ConstCharStar, hanlder:cpp.Callable<WrenVM->Void>):Void;
-	@:native('linc::wren::setMethod')
-	static function setMethod(className:ConstCharStar, signature:ConstCharStar, isStatic:Bool, hanlder:cpp.Callable<WrenVM->Void>):Void;
 } // Wren
 
 typedef WrenConfiguration = {
 	@:optional var initialHeapSize:UInt;
 	@:optional var minHeapSize:UInt;
 	@:optional var heapGrowthPercent:Int;
-
-	var bindForeignClassFn:Null<cpp.Callable<WrenVM -> cpp.ConstCharStar -> cpp.ConstCharStar -> WrenForeignClassMethods>>;
-	var bindForeignMethodFn:Null<cpp.Callable<WrenVM -> cpp.ConstCharStar -> cpp.ConstCharStar -> Bool -> cpp.ConstCharStar -> WrenForeignMethodFn>>;
 } // WrenConfiguration
 
 @:enum

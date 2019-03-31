@@ -16,9 +16,7 @@ import haxe.rtti.CType.CTypeTools;
 class Helper {
 
 
-	// public static function registerForeignFunc(f:cpp.RawPointer<Void->Void>):wren.WrenForeignMethodFn {
-	// 	return Functions.registerForeignMethod(f);
-	// }
+	
 
 	public static function getParams(vm:WrenVM, numargs:Int):Array<Dynamic>{
 		var params = [];
@@ -123,9 +121,9 @@ class Helper {
 		return Wren.getSlotType(vm, slot);
 	}
 
-	public static function setSlotNewForeign(vm:WrenVM, slot:Int, classSlot:Int, size:UInt):Dynamic {
-		return Wren.setSlotNewForeign(vm, 0, 0, 8);
-	}
+	// public static function setSlotNewForeign(vm:WrenVM, slot:Int, classSlot:Int, size:UInt):Dynamic {
+	// 	return Wren.setSlotNewForeign(vm, 0, 0, 8);
+	// }
 
 	public static function saveToSlot(vm:WrenVM, slot:Int, value:Dynamic, type:Type.ValueType):Void {
 		switch (type) {

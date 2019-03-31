@@ -1,6 +1,6 @@
 
 class MyClass extends wren.WrenClass {
-    override static public function constructor(x:Int):Dynamic{
+    override static public function constructor(x:Dynamic):Dynamic{
         return {
             x: x
         };

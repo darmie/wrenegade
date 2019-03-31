@@ -1,7 +1,11 @@
--cp src/
+-cp wren/
 -cp test/
--dce no
+-dce std
 # -lib linc_wren
 -main Test
 
---interp
+# --interp
+-cpp cpp/
+
+-D mac
+-D HXCPP_M64

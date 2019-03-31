@@ -36,7 +36,7 @@ class Linc {
     macro public static function xml(_lib:String, _relative_root:String='../'):Array<Field> {
 
         var _pos =  Context.currentPos();
-        var _pos_info = _pos.getInfos();
+        var _pos_info = Context.getPosInfos(_pos);
         var _class = Context.getLocalClass();
 
         var _source_path = Path.directory(_pos_info.file);
