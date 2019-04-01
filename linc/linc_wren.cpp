@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <cassert>
 
-#include "../bindings/c/functions.h"
+#include <wren_bindings.h>
 
 // #ifndef INCLUDED_wren_VM
 // #include <wren/VM.h>

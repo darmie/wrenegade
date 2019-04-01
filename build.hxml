@@ -1,7 +1,7 @@
 -cp wren/
 -cp test/
 -dce std
-# -lib linc_wren
+-lib yaml
 -main Test
 
 # --interp

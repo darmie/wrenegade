@@ -1,4 +1,3 @@
-#include "../../linc/linc_wren.h"
 #include "functions.h"
 #include <wren/Helper.h>
 #include <Test.h>

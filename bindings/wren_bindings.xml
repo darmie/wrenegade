@@ -1,0 +1,6 @@
+<xml>
+	<files id='haxe'>
+		<precompiledheader name="wren_bindings" dir="/Users/damilare/Documents/projects/Wrenegade/bindings" />
+		<file name="/Users/damilare/Documents/projects/Wrenegade/bindings/c/functions.cpp" />
+	</files>
+</xml>

@@ -30,16 +30,10 @@ class Test extends wren.WrenClass {
 
 
 	private static function runInstance() {
-		var program:String = '
-        foreign class MyClass {
-            construct new(){}
-            foreign add(x, y)
-        }
-        var myclass = MyClass.new()
-        myclass.add(5, 40)';
+		
 		var vm = new VM();
 		try {
-			var err = vm.interpret("main", program);
+			var err = vm.interpretFile("main", "test/myclass.wren");
 			if (err != null) {
 				throw err;
 			}

@@ -3,12 +3,8 @@
     <set name="WREN" value="${LINC_WREN_PATH}/lib/wren" />
 
     <files id='haxe'>
-        <compilerflag value='-I${LINC_WREN_PATH}bindings'/>
         <compilerflag value='-I${LINC_WREN_PATH}/linc'/>
         <compilerflag value='-I${LINC_WREN_PATH}/lib/wren'/>
-       
-
-        <file name='${LINC_WREN_PATH}/bindings/c/functions.cpp' />
         <file name='${LINC_WREN_PATH}/linc/linc_wren.cpp' />
        
 

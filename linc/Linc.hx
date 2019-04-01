@@ -3,6 +3,10 @@ package linc;
 import haxe.io.Path;
 import haxe.macro.Expr;
 import haxe.macro.Context;
+import sys.FileSystem;
+import yaml.Yaml;
+import yaml.Parser;
+import yaml.util.ObjectMap;
 
 using haxe.macro.PositionTools;
 
@@ -35,6 +39,13 @@ class Linc {
             ${LINC_SOMELIB_PATH}/linc/linc_${_lib}.xml is added directly. */
     macro public static function xml(_lib:String, _relative_root:String='../'):Array<Field> {
 
+        var dir = Sys.getCwd();
+		var env = {dir: dir};
+		var config = Path.join([dir, ".wrenconfig"]);
+		var config_data:AnyObjectMap = Yaml.read(config); 
+		var bindingsDir = config_data.get("bindpath");
+		// var wrenlibpath = new haxe.Template(config_data.get("wrenlib")).execute(env);
+
         var _pos =  Context.currentPos();
         var _pos_info = Context.getPosInfos(_pos);
         var _class = Context.getLocalClass();
@@ -52,7 +63,7 @@ class Linc {
 
         var _define = '<set name="$_linc_lib_var" value="$_linc_lib_path/"/>';
         var _import_path = '$${$_linc_lib_var}linc/linc_${_lib}.xml';
-        var _import = '<include name="$_import_path" />';
+        var _import = '<include name="$_import_path" />\n<include name="${FileSystem.absolutePath(bindingsDir)}/wren_bindings.xml" />';
 
         _class.get().meta.add(":buildXml", [{ expr:EConst( CString( '$_define\n$_import' ) ), pos:_pos }], _pos );
         

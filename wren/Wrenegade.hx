@@ -7,6 +7,9 @@ import sys.io.File;
 import sys.FileSystem;
 import haxe.macro.Expr;
 import haxe.macro.Context;
+import yaml.Yaml;
+import yaml.Parser;
+import yaml.util.ObjectMap;
 
 using StringTools;
 
@@ -16,6 +19,7 @@ using StringTools;
 @:keep
 @:keepSub
 class Wrenegade {
+	static var bindingsDir:String;
 	static var bindWrenPath:String;
 	static var bindCPath:String;
 	static var bindClassSignatureMap:Map<String, String> = new Map(); // funcName, signature
@@ -27,9 +31,21 @@ class Wrenegade {
 	static var foreignFuncsDec:Array<String> = [];
 	static var foreignConstructorDec:Array<String> = [];
 	static var moduleName:String;
+	static var cpath:String;
+	static var wrenlibpath:String;
+	static var wrensrcpath:String;
+
 
 	macro static public function bind():Array<Field> {
 		moduleName = Context.getLocalClass().toString();
+
+		var dir = Sys.getCwd();
+		var env = {dir: dir};
+		var config = Path.join([dir, ".wrenconfig"]);
+		var config_data:AnyObjectMap = Yaml.read(config); 
+		bindingsDir = config_data.get("bindpath");
+		wrenlibpath = new haxe.Template(config_data.get("wrenlib")).execute(env);
+		wrensrcpath = new haxe.Template(config_data.get("wrensrc")).execute(env);
 
 		createPath(Context.getLocalModule());
 		createBindInclude();
@@ -37,12 +53,34 @@ class Wrenegade {
 	}
 
 	private static function createPath(file:String) {
-		var cdirectory = "bindings/";
-		bindCPath = haxe.io.Path.join([cdirectory, "c", file.split(".").join("/")]);
-		bindWrenPath = haxe.io.Path.join([cdirectory, "wren", file.split(".").join("/")]);
+		cpath = Path.join([bindingsDir, "c"]) + "/";
+		bindCPath = haxe.io.Path.join([bindingsDir, "c", file.split(".").join("/")]);
+		bindWrenPath = haxe.io.Path.join([wrensrcpath, file.split(".").join("/")]);
 
-		FileSystem.createDirectory("bindings/c");
-		FileSystem.createDirectory(bindWrenPath);
+		var wren_bindings = new StringBuf();
+		wren_bindings.add("#ifndef _WREN_BINDINGS_\n");
+		wren_bindings.add("#define _WREN_BINDINGS_\n");
+		wren_bindings.add('#include "c/functions.h"\n');
+		wren_bindings.add("#endif");
+
+		
+
+		var wren_bindings_xml = new StringBuf();
+		wren_bindings_xml.add("<xml>\n");
+		wren_bindings_xml.add("\t<files id='haxe'>\n");
+		wren_bindings_xml.add('\t\t<precompiledheader name="wren_bindings" dir="${FileSystem.absolutePath(bindingsDir)}" />\n');
+		// wren_bindings_xml.add('\t\t<compilerflag value="-I${FileSystem.absolutePath(bindingsDir)}/wren_bindings.h"/>\n');
+		wren_bindings_xml.add('\t\t<file name="${FileSystem.absolutePath(cpath)}/functions.cpp" />\n');
+		wren_bindings_xml.add("\t</files>\n");
+		wren_bindings_xml.add("</xml>");
+
+		
+
+		FileSystem.createDirectory(cpath);
+		// FileSystem.createDirectory(bindWrenPath);
+
+		sys.io.File.saveContent('${bindingsDir}/wren_bindings.xml', wren_bindings_xml.toString());
+		sys.io.File.saveContent('${bindingsDir}/wren_bindings.h', wren_bindings.toString());
 	}
 
 	private static function createBindInclude() {
@@ -60,9 +98,9 @@ class Wrenegade {
 								}
 							case _:
 						}
-						signature += bindCPath.replace("bindings/c/", "").split("/").join(".");
+						signature += bindCPath.replace(cpath, "").split("/").join(".");
 						var cFuncName = "::";
-						cFuncName += bindCPath.replace("bindings/c/", "").split("/").join("::");
+						cFuncName += bindCPath.replace(cpath, "").split("/").join("::");
 						cFuncName += "_obj";
 						cFuncName += "::";
 						switch (field.access) {
@@ -105,7 +143,7 @@ class Wrenegade {
 							cFuncName += "()";
 							signature += ")";
 						}
-						var funcName = bindCPath.replace("bindings/c/", "").split("/").join("_");
+						var funcName = bindCPath.replace(cpath, "").split("/").join("_");
 						funcName += "_";
 						funcName += field.name;
 						funcName = funcName.toLowerCase();
@@ -164,8 +202,8 @@ class Wrenegade {
 
 		var content = new StringBuf();
 
-		content.add('#include "../../linc/linc_wren.h"');
-		content.add("\n");
+		// content.add('#include "../../linc/linc_wren.h"');
+		// content.add("\n");
 		content.add('#include "functions.h"');
 		content.add("\n");
 		content.add('#include <wren/Helper.h>');
@@ -264,7 +302,7 @@ class Wrenegade {
 		content.add("\n");
 		content.add("}");
 
-		sys.io.File.saveContent('bindings/c/functions.cpp', content.toString());
+		sys.io.File.saveContent('${cpath}/functions.cpp', content.toString());
 
 		var include = new StringBuf();
 		include.add('#ifndef _bindings_functions_h');
@@ -277,7 +315,7 @@ class Wrenegade {
 		include.add("\n");
 		include.add('{');
 		include.add("\n");
-		include.add('#include <../lib/wren/src/include/wren.h>');
+		include.add('#include <${wrenlibpath}/src/include/wren.h>');
 		include.add("\n");
 		include.add('}');
 		include.add("\n");
@@ -299,7 +337,7 @@ class Wrenegade {
 		include.add('}');
 		include.add("\n");
 		include.add("#endif");
-		sys.io.File.saveContent('bindings/c/functions.h', include.toString());
+		sys.io.File.saveContent('${cpath}/functions.h', include.toString());
 	}
 }
 #end

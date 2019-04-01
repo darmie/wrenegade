@@ -36,7 +36,7 @@ class VM {
 
 	public function interpretFile(module:String, filePath:String):String {
 		var file = sys.io.File.getContent(filePath);
-		return this.interpret("main", file);
+		return this.interpret(module, file);
 	}
 
 	public function variable(name:String):Value {

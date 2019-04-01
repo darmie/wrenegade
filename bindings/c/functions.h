@@ -3,7 +3,7 @@
 #include <hxcpp.h>
 extern "C"
 {
-#include <../lib/wren/src/include/wren.h>
+#include </Users/damilare/Documents/projects/Wrenegade//lib/wren/src/include/wren.h>
 }
 namespace bindings {
 namespace functions {
