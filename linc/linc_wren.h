@@ -6,10 +6,13 @@
 // #include "../lib/____"
 
 #include <hxcpp.h>
+#ifndef _WREN_BINDINGS_
+#include <wren_bindings.h>
+#endif
 
 extern "C"
 {
-#include <../lib/wren/src/include/wren.h>
+#include <wren.h>
 }
 
 namespace linc

@@ -3,12 +3,12 @@
 #include <hxcpp.h>
 extern "C"
 {
-#include </Users/damilare/Documents/projects/Wrenegade//lib/wren/src/include/wren.h>
+#include <wren.h>
 }
 namespace bindings {
 namespace functions {
-static void test_add(WrenVM *vm);
-static void myclass_add(WrenVM *vm);
+static void test_test_add(WrenVM *vm);
+static void test_myclass_add(WrenVM *vm);
 
 WrenForeignMethodFn bindMethod(const char* signature);
 void bindClass(const char* className, WrenForeignClassMethods* methods);

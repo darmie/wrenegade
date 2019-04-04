@@ -1,10 +1,10 @@
 
 <xml>
-    <set name="WREN" value="${LINC_WREN_PATH}/lib/wren" />
-
     <files id='haxe'>
+        <compilerflag value='-I${WREN_BINDINGS}' />
         <compilerflag value='-I${LINC_WREN_PATH}/linc'/>
-        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren'/>
+        <compilerflag value='-I${WREN}'/>
+        <compilerflag value='-I${WREN}/src/include'/>
         <file name='${LINC_WREN_PATH}/linc/linc_wren.cpp' />
        
 
@@ -12,10 +12,10 @@
 
     <files id="wren">
         <compilerflag value='-I${LINC_WREN_PATH}/linc'/>
-        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren'/>
-        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren/src/include'/>
-        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren/src/vm'/>
-        <compilerflag value='-I${LINC_WREN_PATH}/lib/wren/src/optional'/>
+        <!-- <compilerflag value='-I${LINC_WREN_PATH}/lib/wren'/> -->
+        <compilerflag value='-I${WREN}/src/include'/>
+        <compilerflag value='-I${WREN}/src/vm'/>
+        <compilerflag value='-I${WREN}/src/optional'/>
         <compilerflag value="-I${WREN}"/>
 
         <!-- <compilerflag value="-DWREN_OPT_META"/> -->

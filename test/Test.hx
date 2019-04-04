@@ -1,4 +1,7 @@
-import MyClass;
+
+package test;
+
+import test.MyClass;
 import wren.VM;
 
 class Test extends wren.WrenClass {
@@ -33,7 +36,7 @@ class Test extends wren.WrenClass {
 		
 		var vm = new VM();
 		try {
-			var err = vm.interpretFile("main", "test/myclass.wren");
+			var err = vm.interpretFile("main", "myclass.wren");
 			if (err != null) {
 				throw err;
 			}

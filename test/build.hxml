@@ -1,0 +1,12 @@
+-cp ../
+-cp ./
+-dce std
+-lib yaml
+-main test.Test
+
+# --interp
+-cpp cpp/
+
+-D mac
+-D HXCPP_M64
+-D HXCPP_VERBOSE

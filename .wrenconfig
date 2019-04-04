@@ -1,3 +1,0 @@
-bindpath: "bindings" #relative to your project dir
-wrenlib: "::dir::/lib/wren" #absolute path to your wren lib
-wrensrc: "::dir::/test" #absolute path to your wren project

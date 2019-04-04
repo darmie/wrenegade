@@ -31,6 +31,8 @@ class Wrenegade {
 	static var foreignFuncsDec:Array<String> = [];
 	static var foreignConstructorDec:Array<String> = [];
 	static var moduleName:String;
+	static var bindCModules:Array<String> = []; // signature , cmethod
+	static var className:String;
 	static var cpath:String;
 	static var wrenlibpath:String;
 	static var wrensrcpath:String;
@@ -38,6 +40,9 @@ class Wrenegade {
 
 	macro static public function bind():Array<Field> {
 		moduleName = Context.getLocalClass().toString();
+		className = moduleName.split(".")[moduleName.split(".").length - 1];
+
+		bindCModules.push(moduleName);
 
 		var dir = Sys.getCwd();
 		var env = {dir: dir};
@@ -67,8 +72,11 @@ class Wrenegade {
 
 		var wren_bindings_xml = new StringBuf();
 		wren_bindings_xml.add("<xml>\n");
+		wren_bindings_xml.add('\t<set name="WREN" value="${FileSystem.absolutePath(wrenlibpath)}" />\n');
+		wren_bindings_xml.add('\t<set name="WREN_BINDINGS" value="${FileSystem.absolutePath(bindingsDir)}" />\n');
 		wren_bindings_xml.add("\t<files id='haxe'>\n");
 		wren_bindings_xml.add('\t\t<precompiledheader name="wren_bindings" dir="${FileSystem.absolutePath(bindingsDir)}" />\n');
+		wren_bindings_xml.add('\t\t<precompiledheader name="wren" dir="${FileSystem.absolutePath(wrenlibpath + "/src/include")}" />\n');
 		// wren_bindings_xml.add('\t\t<compilerflag value="-I${FileSystem.absolutePath(bindingsDir)}/wren_bindings.h"/>\n');
 		wren_bindings_xml.add('\t\t<file name="${FileSystem.absolutePath(cpath)}/functions.cpp" />\n');
 		wren_bindings_xml.add("\t</files>\n");
@@ -98,7 +106,7 @@ class Wrenegade {
 								}
 							case _:
 						}
-						signature += bindCPath.replace(cpath, "").split("/").join(".");
+						signature += className; //bindCPath.replace(cpath, "").split("/").join(".");
 						var cFuncName = "::";
 						cFuncName += bindCPath.replace(cpath, "").split("/").join("::");
 						cFuncName += "_obj";
@@ -154,6 +162,7 @@ class Wrenegade {
 										bindCClassMap.set(funcName, cFuncName);
 										bindCClassArgsMap.set(funcName, params);
 										bindSignatureMap.set(funcName, signature);
+										
 
 										var foreignFunc = "static void ";
 										foreignFunc += funcName;
@@ -202,13 +211,14 @@ class Wrenegade {
 
 		var content = new StringBuf();
 
-		// content.add('#include "../../linc/linc_wren.h"');
-		// content.add("\n");
+		var cModule = moduleName.replace(".", "::");
+
+
 		content.add('#include "functions.h"');
 		content.add("\n");
 		content.add('#include <wren/Helper.h>');
 		content.add("\n");
-		for (inc in bindClassSignatureMap) {
+		for (inc in bindCModules) {
 			content.add('#include <${inc.replace(".", "/").replace("static ", "")}.h>');
 			content.add("\n");
 		}
@@ -244,10 +254,7 @@ class Wrenegade {
 			content.add("{");
 			content.add("\n");
 			content.add("\t");
-			content.add("cpp::Pointer<::Dynamic> handler = new cpp::Pointer<::Dynamic>();");
-			content.add("\n");
-			content.add("\t");
-			content.add("auto constructor = wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));");
+			content.add('${cModule}* constructor = (${cModule}*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(${cModule}));');
 			content.add("\n");
 			for (i in 0...params.length) {
 				content.add("\t");
@@ -261,10 +268,7 @@ class Wrenegade {
 			content.add('auto data = ${bindCClassMap.get(sig)};');
 			content.add("\n");
 			content.add("\t");
-			content.add('&handler.set_ref(data);');
-			content.add("\n");
-			content.add("\t");
-			content.add('constructor = &handler;');
+			content.add('std::memcpy(constructor, &data, sizeof(${cModule}));');
 			content.add("\n");
 			content.add("}");
 			content.add("\n");
@@ -315,7 +319,7 @@ class Wrenegade {
 		include.add("\n");
 		include.add('{');
 		include.add("\n");
-		include.add('#include <${wrenlibpath}/src/include/wren.h>');
+		include.add('#include <wren.h>');
 		include.add("\n");
 		include.add('}');
 		include.add("\n");

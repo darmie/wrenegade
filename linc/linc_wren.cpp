@@ -8,8 +8,6 @@
 #include <sys/stat.h>
 #include <cassert>
 
-#include <wren_bindings.h>
-
 // #ifndef INCLUDED_wren_VM
 // #include <wren/VM.h>
 // #endif
@@ -78,6 +76,7 @@ char *loadModuleFn(WrenVM *vm, const char *mod)
 
 WrenForeignClassMethods bindForeignClass(WrenVM *vm, const char *module, const char *className)
 {
+	// printf("module: %s\n", std::string(module).c_str());
 	WrenForeignClassMethods holder;
 	holder.finalize = NULL;
 	bindings::functions::bindClass(className, &holder);
@@ -95,12 +94,14 @@ WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char
 		fullName << "static ";
 	}
 	fullName << className << "." << signature;
+	// printf("module: %s\n", std::string(module).c_str());
+	// printf("method Signature: %s\n", fullName.str().c_str());
 	return bindings::functions::bindMethod(fullName.str().c_str());
 };
 
 void writeErr(WrenVM *vm, WrenErrorType errorType, const char *module, int line, const char *message)
 {
-	printf("errMessage: %s", std::string(message).c_str());
+	printf("errMessage: %s\n", std::string(message).c_str());
 	// ::wren::Helper_obj::writeErr(vm, errorType, module, line, message);
 }
 

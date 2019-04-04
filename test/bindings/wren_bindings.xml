@@ -1,0 +1,9 @@
+<xml>
+	<set name="WREN" value="/Users/damilare/Documents/projects/Wrenegade/test/../lib/wren" />
+	<set name="WREN_BINDINGS" value="/Users/damilare/Documents/projects/Wrenegade/test/bindings" />
+	<files id='haxe'>
+		<precompiledheader name="wren_bindings" dir="/Users/damilare/Documents/projects/Wrenegade/test/bindings" />
+		<precompiledheader name="wren" dir="/Users/damilare/Documents/projects/Wrenegade/test/../lib/wren/src/include" />
+		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/functions.cpp" />
+	</files>
+</xml>

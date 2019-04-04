@@ -1,11 +1,12 @@
 -cp wren/
--cp test/
+# -cp test/
 -dce std
 -lib yaml
--main Test
+# -main test.Test
 
-# --interp
--cpp cpp/
+# # --interp
+# -cpp cpp/
 
--D mac
--D HXCPP_M64
+# -D mac
+# -D HXCPP_M64
+# -D HXCPP_VERBOSE

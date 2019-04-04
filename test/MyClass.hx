@@ -1,4 +1,6 @@
 
+package test;
+
 class MyClass extends wren.WrenClass {
     private static var instance:MyClass;
     public static function getInstance():MyClass{
