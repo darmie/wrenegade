@@ -7,6 +7,7 @@ extern "C"
 }
 namespace bindings {
 namespace functions {
+static void test_test_init(WrenVM *vm);
 static void test_test_add(WrenVM *vm);
 static void test_myclass_add(WrenVM *vm);
 

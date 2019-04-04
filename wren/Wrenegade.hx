@@ -31,23 +31,20 @@ class Wrenegade {
 	static var foreignFuncsDec:Array<String> = [];
 	static var foreignConstructorDec:Array<String> = [];
 	static var moduleName:String;
-	static var bindCModules:Array<String> = []; // signature , cmethod
+	static var bindCModules:Map<String, String> = new Map();
 	static var className:String;
 	static var cpath:String;
 	static var wrenlibpath:String;
 	static var wrensrcpath:String;
 
-
 	macro static public function bind():Array<Field> {
 		moduleName = Context.getLocalClass().toString();
 		className = moduleName.split(".")[moduleName.split(".").length - 1];
 
-		bindCModules.push(moduleName);
-
 		var dir = Sys.getCwd();
 		var env = {dir: dir};
 		var config = Path.join([dir, ".wrenconfig"]);
-		var config_data:AnyObjectMap = Yaml.read(config); 
+		var config_data:AnyObjectMap = Yaml.read(config);
 		bindingsDir = config_data.get("bindpath");
 		wrenlibpath = new haxe.Template(config_data.get("wrenlib")).execute(env);
 		wrensrcpath = new haxe.Template(config_data.get("wrensrc")).execute(env);
@@ -68,8 +65,6 @@ class Wrenegade {
 		wren_bindings.add('#include "c/functions.h"\n');
 		wren_bindings.add("#endif");
 
-		
-
 		var wren_bindings_xml = new StringBuf();
 		wren_bindings_xml.add("<xml>\n");
 		wren_bindings_xml.add('\t<set name="WREN" value="${FileSystem.absolutePath(wrenlibpath)}" />\n');
@@ -81,8 +76,6 @@ class Wrenegade {
 		wren_bindings_xml.add('\t\t<file name="${FileSystem.absolutePath(cpath)}/functions.cpp" />\n');
 		wren_bindings_xml.add("\t</files>\n");
 		wren_bindings_xml.add("</xml>");
-
-		
 
 		FileSystem.createDirectory(cpath);
 		// FileSystem.createDirectory(bindWrenPath);
@@ -106,7 +99,8 @@ class Wrenegade {
 								}
 							case _:
 						}
-						signature += className; //bindCPath.replace(cpath, "").split("/").join(".");
+
+						signature += className;
 						var cFuncName = "::";
 						cFuncName += bindCPath.replace(cpath, "").split("/").join("::");
 						cFuncName += "_obj";
@@ -149,7 +143,7 @@ class Wrenegade {
 							signature += ")";
 						} else {
 							cFuncName += "()";
-							signature += ")";
+							signature += "_)";
 						}
 						var funcName = bindCPath.replace(cpath, "").split("/").join("_");
 						funcName += "_";
@@ -162,13 +156,14 @@ class Wrenegade {
 										bindCClassMap.set(funcName, cFuncName);
 										bindCClassArgsMap.set(funcName, params);
 										bindSignatureMap.set(funcName, signature);
-										
+
+										bindCModules.set(funcName, moduleName);
 
 										var foreignFunc = "static void ";
 										foreignFunc += funcName;
 										foreignFunc += "(WrenVM *vm);";
 										foreignConstructorDec.push(foreignFunc);
-									} else  {
+									} else {
 										bindMethodMap.set(funcName, params);
 										bindCMethodMap.set(funcName, cFuncName);
 										bindSignatureMap.set(funcName, signature);
@@ -180,26 +175,24 @@ class Wrenegade {
 									}
 								}
 							case [AOverride, AStatic, APublic] | [AStatic, APublic] | [APublic, AStatic]: {
-									if (field.name.trim() == "new" || field.name.trim() == "main" || field.name.trim() == "init") {
-										if (field.name.trim() == "init") {
-											if (field.name.trim() == "init")
-												bindClassSignatureMap.set(funcName, signature.split("(")[0].replace(".init", ""));
-											bindCClassMap.set(funcName, cFuncName);
-											bindCClassArgsMap.set(funcName, params);
-											var foreignFunc = "static void ";
-											foreignFunc += funcName;
-											foreignFunc += "(WrenVM *vm);";
-											foreignConstructorDec.push(foreignFunc);
-										}
-									} else if(field.name.trim() != "getInstance") {
+									if (field.name.trim() == "new" || field.name.trim() == "main") {} else if (field.name
+										.trim() != "getInstance") {
 										bindMethodMap.set(funcName, params);
 										bindCMethodMap.set(funcName, cFuncName);
 										bindSignatureMap.set(funcName, signature);
+										bindCModules.set(funcName, moduleName);
 
 										var foreignFunc = "static void ";
 										foreignFunc += funcName;
 										foreignFunc += "(WrenVM *vm);";
 										foreignFuncsDec.push(foreignFunc);
+									} else if (field.name.trim() == "getInstance") {
+										bindCClassArgsMap.set(funcName, params);
+										bindCModules.set(funcName, moduleName);
+
+										var foreignFunc = "static void ";
+										foreignFunc += funcName;
+										foreignFunc += "(WrenVM *vm);";
 									}
 								};
 							case _:
@@ -212,7 +205,6 @@ class Wrenegade {
 		var content = new StringBuf();
 
 		var cModule = moduleName.replace(".", "::");
-
 
 		content.add('#include "functions.h"');
 		content.add("\n");
@@ -230,6 +222,7 @@ class Wrenegade {
 		for (func in foreignFuncsDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var params:Array<String> = bindMethodMap.get(sig);
+
 			content.add(func.replace(";", ""));
 			content.add("{");
 			content.add("\n");
@@ -254,7 +247,8 @@ class Wrenegade {
 			content.add("{");
 			content.add("\n");
 			content.add("\t");
-			content.add('${cModule}* constructor = (${cModule}*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(${cModule}));');
+			content
+				.add('${bindCModules.get(sig).replace(".", "::")}* constructor = (${bindCModules.get(sig).replace(".", "::")}*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(${bindCModules.get(sig).replace(".", "::")}));');
 			content.add("\n");
 			for (i in 0...params.length) {
 				content.add("\t");
@@ -268,7 +262,7 @@ class Wrenegade {
 			content.add('auto data = ${bindCClassMap.get(sig)};');
 			content.add("\n");
 			content.add("\t");
-			content.add('std::memcpy(constructor, &data, sizeof(${cModule}));');
+			content.add('std::memcpy(constructor, &data, sizeof(${bindCModules.get(sig).replace(".", "::")}));');
 			content.add("\n");
 			content.add("}");
 			content.add("\n");
@@ -292,12 +286,14 @@ class Wrenegade {
 		content.add("\n");
 		content.add('void bindClass(const char* className, WrenForeignClassMethods* methods) {');
 		content.add("\n");
+
 		for (func in foreignConstructorDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var funct = bindClassSignatureMap.get(sig);
+			var _f = funct.split(".");
 			content.add("\t");
 			content
-				.add('if (strcmp(className, "${funct.indexOf("static") != -1 ? funct.replace("static ", "") : funct}") == 0) { \n\t\tmethods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \t\treturn; \n\t}');
+				.add('if (strcmp(className, "${funct.indexOf("static") != -1 ? funct.replace("static ", "") : _f[_f.length - 1]}") == 0) { \n\t\tmethods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \t\treturn; \n\t}');
 			content.add("\n");
 		}
 		content.add("}");
