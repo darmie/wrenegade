@@ -10,6 +10,7 @@ import cpp.Callable;
  * The Wren Virtual Machine
  */
 class VM {
+	public static var instance:WrenVM;
 	private var vm:WrenVM;
 
 	private static var classes:Array<String> = [];
@@ -20,6 +21,7 @@ class VM {
 	public function new() {
 
 		this.vm = Wren.newVM();
+		VM.instance = this.vm;
 	}
 
 	public function stop() {

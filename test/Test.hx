@@ -4,9 +4,6 @@ import myclass.MyClass;
 import wren.VM;
 
 class Test extends wren.WrenClass {
-	@:keep public static var initializer:Dynamic = {
-		hello: "world"
-	};
 
 	public static function main() {
         runStatic();
@@ -44,10 +41,6 @@ class Test extends wren.WrenClass {
 		} catch (e:Dynamic) {
 			throw e;
 		}
-	}
-
-	static public function init():Dynamic {
-		return initializer;
 	}
 
 	static public function add(x:Dynamic, y:Dynamic) {

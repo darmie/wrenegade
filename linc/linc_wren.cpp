@@ -45,7 +45,7 @@ inline std::string fileToString(const std::string &file)
 
 void writeFn(WrenVM *vm, const char *text)
 {
-
+	printf("%s", std::string(text).c_str());
 	fflush(stdout);
 }
 
@@ -92,12 +92,12 @@ WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char
 	}
 	
 	fullName << className << "." << signature;
+	// printf("%s\n", fullName.str().c_str());
 	return bindings::functions::bindMethod(module, fullName.str().c_str());
 };
 
 void writeErr(WrenVM *vm, WrenErrorType errorType, const char *module, int line, const char *message)
 {
-	// printf("errMessage: %s\n", std::string(message).c_str());
 	::wren::Helper_obj::writeErr(vm, errorType, module, line, message);
 }
 

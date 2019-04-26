@@ -43,18 +43,18 @@ class Helper {
 
 
 	public static function newForeign(vm:WrenVM, x:Dynamic){
-		trace(x);
-		var data = Wren.setSlotNewForeign(vm, 0, 0, 8);
+		// trace(x);
+		// var data = Wren.setSlotNewForeign(vm, 0, 0, 8);
 
-		trace(data);
+		// trace(data);
 
-		var fs = Reflect.fields(Type.getClass(data));
+		// var fs = Reflect.fields(Type.getClass(data));
 
-		for(i in 0...fs.length){
-			var name = fs[i];
-			var f = Reflect.field(Type.getClass(data), name);
-			Reflect.setField(Type.getClass(x), name, f);
-		}
+		// for(i in 0...fs.length){
+		// 	var name = fs[i];
+		// 	var f = Reflect.field(Type.getClass(data), name);
+		// 	Reflect.setField(Type.getClass(x), name, f);
+		// }
 	}
 
 	// handle static functions
@@ -126,6 +126,7 @@ class Helper {
 	// }
 
 	public static function saveToSlot(vm:WrenVM, slot:Int, value:Dynamic, type:Type.ValueType):Void {
+		
 		switch (type) {
 			case TInt:
 				{
@@ -141,7 +142,11 @@ class Helper {
 				}
 			case TClass(c):
 				{
-					Wren.setSlotString(vm, slot, value);
+					switch(c){
+						case String: Wren.setSlotString(vm, slot, value);
+						case _:
+					}
+					
 				}
 			case TNull:
 				{

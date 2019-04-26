@@ -53,7 +53,7 @@ extern class Wren {
 	@:native('wrenSetSlotDouble')
 	static function setSlotDouble(vm:WrenVM, slot:Int, value:Float):Void;
 	@:native('wrenSetSlotNewForeign')
-	static function setSlotNewForeign(vm:WrenVM, slot:Int, classSlot:Int, size:UInt):cpp.Pointer<UInt8>;
+	static function setSlotNewForeign(vm:WrenVM, slot:Int, classSlot:Int, size:UInt):cpp.RawPointer<Dynamic>;
 	@:native('wrenSetSlotNewList')
 	static function setSlotNewList(vm:WrenVM, slot:Int):Void;
 	@:native('wrenSetSlotNull')

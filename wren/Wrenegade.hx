@@ -3,7 +3,6 @@ package wren;
 #if macro
 import haxe.io.Path;
 import sys.io.File;
-// import wren.Wren;
 import sys.FileSystem;
 import haxe.macro.Expr;
 import haxe.macro.Context;
@@ -175,8 +174,7 @@ class Wrenegade {
 									}
 								}
 							case [AOverride, AStatic, APublic] | [AStatic, APublic] | [APublic, AStatic]: {
-									if (field.name.trim() == "new" || field.name.trim() == "main") {} else if (field.name
-										.trim() != "getInstance") {
+									if (field.name.trim() == "new" || field.name.trim() == "main") {} else if (field.name.trim() != "getInstance") {
 										bindMethodMap.set(funcName, params);
 										bindCMethodMap.set(funcName, cFuncName);
 										bindSignatureMap.set(funcName, signature);
@@ -198,6 +196,59 @@ class Wrenegade {
 							case _:
 						}
 					}
+				case FVar(v):
+					{
+						if (field.name != "instance") {
+							var params = [];
+							var signature = "";
+							switch (field.access) {
+								case [AOverride, AStatic, APublic] | [AStatic, APublic] | [APublic, AStatic]: {
+										signature += "static ";
+									}
+								case _:
+							}
+
+							signature += className;
+							var cFuncName = "::";
+							cFuncName += bindCPath.replace(cpath, "").split("/").join("::");
+							cFuncName += "_obj";
+							cFuncName += "::";
+							switch (field.access) {
+								case [APublic]: {
+										if (field.name.trim() != "new") {
+											cFuncName += "getInstance()";
+											cFuncName += "->";
+										}
+									}
+								case _:
+							}
+
+							cFuncName += field.name;
+							signature += ".";
+							signature += field.name;
+							signature += "=(";
+							signature += "_)";
+
+							var funcName = bindCPath.replace(cpath, "").split("/").join("_");
+							funcName += "_";
+							funcName += field.name;
+							funcName = funcName.toLowerCase();
+
+							bindMethodMap.set(funcName, null);
+							bindCMethodMap.set(funcName, cFuncName);
+							bindSignatureMap.set(funcName + "_set", signature);
+							bindSignatureMap.set(funcName + "_get", signature.replace("=(_)", ""));
+
+							var foreignFunc = "static void ";
+							foreignFunc += funcName + "_set";
+							foreignFunc += "(WrenVM *vm);";
+							foreignFuncsDec.push(foreignFunc);
+							var _foreignFunc = "static void ";
+							_foreignFunc += funcName + "_get";
+							_foreignFunc += "(WrenVM *vm);";
+							foreignFuncsDec.push(_foreignFunc);
+						}
+					}
 				case _:
 			}
 		}
@@ -210,9 +261,15 @@ class Wrenegade {
 		content.add("\n");
 		content.add('#include <wren/Helper.h>');
 		content.add("\n");
+		var includes = [];
 		for (inc in bindCModules) {
-			content.add('#include <${inc.replace(".", "/").replace("static ", "")}.h>');
-			content.add("\n");
+			if (includes.indexOf(inc) == -1) {
+				content.add('#include <${inc.replace(".", "/").replace("static ", "")}.h>');
+				content.add("\n");
+				content.add('static WrenHandle* ${inc.replace(".", "_").replace("static ", "")}_handle;');
+				content.add("\n");
+				includes.push(inc);
+			}
 		}
 		content.add("namespace bindings {");
 		content.add("\n");
@@ -221,22 +278,59 @@ class Wrenegade {
 		content.add("\n");
 		for (func in foreignFuncsDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
-			var params:Array<String> = bindMethodMap.get(sig);
-
+			var params:Array<String> = bindMethodMap.exists(sig) ? bindMethodMap.get(sig) : [];
+			content.add("\n");
 			content.add(func.replace(";", ""));
 			content.add("{");
 			content.add("\n");
 			content.add("\t");
 			content.add("\n");
-			for (i in 0...params.length) {
+			if (params.length != 0) {
+				for (i in 0...params.length) {
+					content.add("\t");
+					content.add('auto ${params[i]} = ::wren::Helper_obj::getFromSlot(vm, ${i + 1});');
+					content.add("\n");
+				}
 				content.add("\t");
-				content.add('auto ${params[i]} = ::wren::Helper_obj::getFromSlot(vm, ${i + 1});');
+				content.add(bindCMethodMap.get(sig));
+				content.add(";");
 				content.add("\n");
+			} else {
+				var _sig = sig.split("_");
+				var prop_type = _sig[_sig.length - 1];
+				var cval = cModule.replace("::", "_").replace("static ", "") + "_handle";
+				switch (prop_type) {
+					case "get":
+						{
+							content.add("\t");
+							content.add('auto val = ${bindCMethodMap.get(sig.replace("_get", ""))};');
+							content.add("\n");
+							content.add("\t");
+							content.add("::ValueType type = ::Type_obj::_hx_typeof(val);");
+							content.add("\n");
+							content.add("\t");
+							content.add('::wren::Helper_obj::saveToSlot(vm, 0, val, type);');
+							content.add("\n");
+							
+						}
+					case "set":
+						{
+							content.add("\t");
+							content.add('::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);');
+							content.add("\n");
+							content.add("\t");
+							content.add('*value = ::wren::Helper_obj::getFromSlot(vm, 1);');
+							content.add("\n");
+							// content.add("\t");
+							// content.add('::haxe::Log_obj::trace(*value);');
+							// content.add("\n");
+							content.add("\t");
+							content.add(' ${bindCMethodMap.get(sig.replace("_set", ""))} = *value;');
+							content.add("\n");
+						}
+					case _:
+				}
 			}
-			content.add("\t");
-			content.add(bindCMethodMap.get(sig));
-			content.add(";");
-			content.add("\n");
 			content.add("}");
 			content.add("\n");
 		}
@@ -275,7 +369,7 @@ class Wrenegade {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var _sig = sig.split("_");
 			var module = "main";
-			if(_sig.length > 2){
+			if (_sig.length > 2) {
 				module = _sig[0];
 			}
 			content.add("\t");
@@ -301,9 +395,21 @@ class Wrenegade {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var funct = bindClassSignatureMap.get(sig);
 			var _f = funct.split(".");
+			var _sig = sig.split("_");
+			var module = "main";
+			if (_sig.length > 2) {
+				module = _sig[0];
+			}
+			content.add("\t");
+			content.add('if (strcmp(module, "$module") == 0){');
+			content.add("\n");
+			content.add("\t");
 			content.add("\t");
 			content
-				.add('if (strcmp(className, "${funct.indexOf("static") != -1 ? funct.replace("static ", "") : _f[_f.length - 1]}") == 0) { \n\t\tmethods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \t\treturn; \n\t}');
+				.add('if (strcmp(className, "${funct.indexOf("static") != -1 ? funct.replace("static ", "") : _f[_f.length - 1]}") == 0) { \n\t\t\tmethods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \t\t\treturn; \n\t\t}');
+			content.add("\n");
+			content.add("\t");
+			content.add("}");
 			content.add("\n");
 		}
 		content.add("}");
@@ -320,6 +426,14 @@ class Wrenegade {
 		include.add('#define _bindings_functions_h');
 		include.add("\n");
 		include.add('#include <hxcpp.h>');
+		include.add("\n");
+		include.add('#ifndef INCLUDED_haxe_Log\n');
+		include.add('#include <haxe/Log.h>\n');
+		include.add('#endif');
+		include.add("\n");
+		include.add('#ifndef INCLUDED_Type\n');
+		include.add('#include <Type.h>\n');
+		include.add('#endif');
 		include.add("\n");
 		include.add('extern "C"');
 		include.add("\n");
