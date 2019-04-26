@@ -1,6 +1,6 @@
 package wren;
 
-import cpp.abi.Abi;
+
 import haxe.Constraints.Function;
 import wren.WrenVM;
 import wren.Wren.WrenType;
@@ -98,11 +98,11 @@ class Helper {
 	public static function writeErr(vm:WrenVM, errorType:WrenErrorType,  module:cpp.ConstCharStar, line:Int, message:cpp.ConstCharStar) {
 		switch errorType {
 			case WrenErrorType.WREN_ERROR_COMPILE:
-				trace('compilation error: ${module.toString()}:${line}: ${message.toString()}\n');
+				Sys.println('compilation error: ${module.toString()}:${line}: ${message.toString()}');
 			case WrenErrorType.WREN_ERROR_RUNTIME:
-				trace('runtime error: ${message.toString()}');
+				Sys.println('runtime error: ${message.toString()}');
 			case WrenErrorType.WREN_ERROR_STACK_TRACE:
-				trace('\t${module.toString()}:${line}: ${message.toString()}\n');
+				Sys.println('\t${module.toString()}:${line}: ${message.toString()}');
 			default:
 				throw "impossible error type";
 		}
@@ -167,7 +167,8 @@ class Helper {
 						return Wren.getSlotDouble(vm, slot);
 					}
 				case WrenType.WREN_TYPE_FOREIGN: {
-						return Wren.getSlotForeign(vm, slot);
+						untyped __cpp__('::Dynamic* val = (::Dynamic*)wrenGetSlotForeign(vm1,slot1)');
+						return untyped __cpp__('*val');
 					}
 				case WrenType.WREN_TYPE_LIST: {
 						var count:Int = Wren.getListCount(vm, slot);

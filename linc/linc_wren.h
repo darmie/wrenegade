@@ -10,6 +10,8 @@
 #include <wren_bindings.h>
 #endif
 
+#include <wren/Helper.h>
+
 extern "C"
 {
 #include <wren.h>

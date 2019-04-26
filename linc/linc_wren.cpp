@@ -76,33 +76,29 @@ char *loadModuleFn(WrenVM *vm, const char *mod)
 
 WrenForeignClassMethods bindForeignClass(WrenVM *vm, const char *module, const char *className)
 {
-	// printf("module: %s\n", std::string(module).c_str());
 	WrenForeignClassMethods holder;
 	holder.finalize = NULL;
-	bindings::functions::bindClass(className, &holder);
+	bindings::functions::bindClass(module, className, &holder);
 
 	return holder;
 }
 
 WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char *className, bool isStatic, const char *signature)
 {
-	if(strcmp(module, "main") != 0){
-		return WrenForeignMethodFn(0);
-	}
 	std::stringstream fullName;
+
 	if(isStatic) {
 		fullName << "static ";
 	}
+	
 	fullName << className << "." << signature;
-	// printf("module: %s\n", std::string(module).c_str());
-	// printf("method Signature: %s\n", fullName.str().c_str());
-	return bindings::functions::bindMethod(fullName.str().c_str());
+	return bindings::functions::bindMethod(module, fullName.str().c_str());
 };
 
 void writeErr(WrenVM *vm, WrenErrorType errorType, const char *module, int line, const char *message)
 {
-	printf("errMessage: %s\n", std::string(message).c_str());
-	// ::wren::Helper_obj::writeErr(vm, errorType, module, line, message);
+	// printf("errMessage: %s\n", std::string(message).c_str());
+	::wren::Helper_obj::writeErr(vm, errorType, module, line, message);
 }
 
 WrenVM *newVM(Dynamic _config)

@@ -2,7 +2,7 @@
 -cp ./
 -dce std
 -lib yaml
--main test.Test
+-main Test
 
 # --interp
 -cpp cpp/

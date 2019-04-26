@@ -269,12 +269,22 @@ class Wrenegade {
 		}
 		content.add("\n");
 		content.add("\n");
-		content.add('WrenForeignMethodFn bindMethod(const char* signature) {');
+		content.add('WrenForeignMethodFn bindMethod(const char* module, const char* signature) {');
 		content.add("\n");
 		for (func in foreignFuncsDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
+			var _sig = sig.split("_");
+			var module = "main";
+			if(_sig.length > 2){
+				module = _sig[0];
+			}
+			content.add("\t");
+			content.add('if (strcmp(module, "$module") == 0){');
+			content.add("\t");
 			content.add("\t");
 			content.add('if (strcmp(signature, "${bindSignatureMap.get(sig)}") == 0) return ${sig};');
+			content.add("\t");
+			content.add("}");
 			content.add("\n");
 		}
 		content.add("\t");
@@ -284,7 +294,7 @@ class Wrenegade {
 
 		content.add("\n");
 		content.add("\n");
-		content.add('void bindClass(const char* className, WrenForeignClassMethods* methods) {');
+		content.add('void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {');
 		content.add("\n");
 
 		for (func in foreignConstructorDec) {
@@ -328,9 +338,9 @@ class Wrenegade {
 			include.add("\n");
 		}
 		include.add("\n");
-		include.add('WrenForeignMethodFn bindMethod(const char* signature);');
+		include.add('WrenForeignMethodFn bindMethod(const char* module, const char* signature);');
 		include.add("\n");
-		include.add("void bindClass(const char* className, WrenForeignClassMethods* methods);");
+		include.add("void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods);");
 		include.add("\n");
 		include.add('}');
 		include.add("\n");

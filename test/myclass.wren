@@ -1,6 +1,5 @@
 foreign class MyClass {
     construct new(){}
     foreign add(x, y)
+    foreign callDyn(v)
 }
-var myclass = MyClass.new()
-myclass.add(5, 40)

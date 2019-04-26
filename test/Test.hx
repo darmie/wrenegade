@@ -1,7 +1,6 @@
 
-package test;
 
-import test.MyClass;
+import myclass.MyClass;
 import wren.VM;
 
 class Test extends wren.WrenClass {
@@ -26,6 +25,7 @@ class Test extends wren.WrenClass {
 			if (err != null) {
 				throw err;
 			}
+			vm.stop();
 		} catch (e:Dynamic) {
 			throw e;
 		}
@@ -36,10 +36,11 @@ class Test extends wren.WrenClass {
 		
 		var vm = new VM();
 		try {
-			var err = vm.interpretFile("main", "myclass.wren");
+			var err = vm.interpretFile("main", "main.wren");
 			if (err != null) {
 				throw err;
 			}
+			vm.stop();
 		} catch (e:Dynamic) {
 			throw e;
 		}
