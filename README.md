@@ -1,3 +1,6 @@
+![Wrenegade](Wrenegade.png)
+
+
 # Wrenegade
 Wrenegade is a toolkit for developing backends for embedded [Wren](http://wren.io) based projects. 
 
