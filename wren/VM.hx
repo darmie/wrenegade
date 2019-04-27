@@ -3,15 +3,15 @@ package wren;
 import cpp.ConstCharStar;
 import cpp.RawPointer;
 import haxe.Constraints.Function;
-import haxe.rtti.Rtti;
 import cpp.Callable;
+import wren.Helper;
 
 /**
  * The Wren Virtual Machine
  */
 class VM {
-	public static var instance:WrenVM;
-	private var vm:WrenVM;
+	public static var instance:wren.WrenVM;
+	private var vm:wren.WrenVM;
 
 	private static var classes:Array<String> = [];
 
@@ -32,16 +32,16 @@ class VM {
 		Wren.collectGarbage(this.vm);
 	}
 
-	public function interpret(module:String, source:String):String { // error string
+	public function interpret(module:String, source:String):WrenErr { // error string
 		return Helper.interpretResultToErr(Wren.interpret(this.vm, module, source));
 	}
 
-	public function interpretFile(module:String, filePath:String):String {
+	public function interpretFile(module:String, filePath:String):WrenErr {
 		var file = sys.io.File.getContent(filePath);
 		return this.interpret(module, file);
 	}
 
-	public function variable(name:String):Value {
+	public function variable(name:String):wren.Value {
 		var module = "main";
 		var name = name;
 
@@ -54,12 +54,6 @@ class VM {
 		if (value.value == null) {
 			return null;
 		}
-
-		// for (method in value.methods){
-		//     Wren.releaseHandle(this.vm, method);
-		// }
-
-		// Wren.releaseHandle(this.vm, value.value);
 
 		return value;
 	}

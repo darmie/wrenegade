@@ -8,92 +8,11 @@ import wren.Wren.WrenInterpretResult;
 
 import wren.Wren;
 
-import haxe.rtti.Rtti;
 
-import haxe.rtti.CType.CTypeTools;
+typedef WrenErr = String;
 
 
 class Helper {
-
-
-	
-
-	public static function getParams(vm:WrenVM, numargs:Int):Array<Dynamic>{
-		var params = [];
-		var offset:Int = 0;
-        var numargs = 1;
-		for (i in 0...numargs) {
-			var slot = i + offset;
-			trace(slot);
-
-			// If the receiver value is inaccessible from C, it likely just means that
-			// it's a native class with a foreign method. Rather than panic, we simply
-			// advance to the first parameter and continue from there.
-			if (i == 0 && Helper.getSlotType(vm, slot) == wren.Wren.WrenType.WREN_TYPE_UNKNOWN) {
-				offset++;
-				slot++;
-			}
-			var v = Helper.getFromSlot(vm, slot);
-			trace(v);
-			params.push(v);
-		}
-
-		return params;
-	}
-
-
-	public static function newForeign(vm:WrenVM, x:Dynamic){
-		// trace(x);
-		// var data = Wren.setSlotNewForeign(vm, 0, 0, 8);
-
-		// trace(data);
-
-		// var fs = Reflect.fields(Type.getClass(data));
-
-		// for(i in 0...fs.length){
-		// 	var name = fs[i];
-		// 	var f = Reflect.field(Type.getClass(data), name);
-		// 	Reflect.setField(Type.getClass(x), name, f);
-		// }
-	}
-
-	// handle static functions
-	public static function handleFunction(vm:WrenVM, _classPath:String, funcName:String) {
-		var inspect = Rtti.getRtti(Type.resolveClass(_classPath)).statics;
-		var params:Array<Dynamic> = [];
-		for (func in inspect) {
-			if (func.name == funcName) {
-				switch (func.type) {
-					case haxe.rtti.CType.CFunction(args, b):
-						{
-							var offset:Int = 0;
-							for (i in 0...args.length) {
-								
-								var slot = i + offset;
-								trace(slot);
-
-								// If the receiver value is inaccessible from C, it likely just means that
-								// it's a native class with a foreign method. Rather than panic, we simply
-								// advance to the first parameter and continue from there.
-								if (i == 0 && Wren.getSlotType(vm, slot) == WrenType.WREN_TYPE_UNKNOWN) {
-									offset++;
-									slot++;
-								}
-								var v = getFromSlot(vm, slot);
-								trace(v);
-								params.push(v);
-							}
-
-							var func = Reflect.field(Type.getClass(_classPath), funcName);
-							var res = Reflect.callMethod(Type.getClass(_classPath), func, params);
-							trace(res);
-							saveToSlot(vm, 0, res, Type.typeof(res));
-						}
-					case _:
-				}
-			}
-		}
-	}
 
 	public static function writeErr(vm:WrenVM, errorType:WrenErrorType,  module:cpp.ConstCharStar, line:Int, message:cpp.ConstCharStar) {
 		switch errorType {
@@ -108,7 +27,7 @@ class Helper {
 		}
 	}
 
-	public static function interpretResultToErr(result:WrenInterpretResult):Dynamic {
+	public static function interpretResultToErr(result:WrenInterpretResult):WrenErr {
 		return switch (result) {
 			case WrenInterpretResult.WREN_RESULT_SUCCESS: null;
 			case WrenInterpretResult.WREN_RESULT_COMPILE_ERROR: "compilation error";
@@ -120,10 +39,6 @@ class Helper {
 	public static function getSlotType(vm:WrenVM, slot:Int):WrenType{
 		return Wren.getSlotType(vm, slot);
 	}
-
-	// public static function setSlotNewForeign(vm:WrenVM, slot:Int, classSlot:Int, size:UInt):Dynamic {
-	// 	return Wren.setSlotNewForeign(vm, 0, 0, 8);
-	// }
 
 	public static function saveToSlot(vm:WrenVM, slot:Int, value:Dynamic, type:Type.ValueType):Void {
 		

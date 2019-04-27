@@ -5,7 +5,7 @@
 # -main test.Test
 
 # # --interp
-# -cpp cpp/
+-cpp cpp/
 
 # -D mac
 # -D HXCPP_M64
