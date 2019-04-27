@@ -151,7 +151,7 @@ Create an equivalent of your class in Wren language:
 
 `{project_root}/scripts/myclass.wren`
 
-```wren
+```dart
 foreign class MyClass {
     construct new(){}
     foreign add(x, y)
@@ -165,7 +165,7 @@ Create a main entry point to your Wren program:
 
 `{project_root}/scripts/main.wren`
 
-```wren
+```dart
 import "myclass" for MyClass
 
 var mclass = MyClass.new()
