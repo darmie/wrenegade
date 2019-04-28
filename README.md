@@ -226,7 +226,14 @@ Test your project binary by running `{project_root}/bin/cpp/MyProject` in termin
 
 
 
+# Why Wrenegade?
+You are probably thinking of embedding a scripting interface in your projects (games, game engines or interactive applications), and you want a light weight, fast object oriented scripting language, Wren is the best choice.
 
+The purpose of Wrenegade is to make it easier to expose Haxe APIs to your embedded Wren scripts without much work. You can provide access to native functions by simply creating an Haxe class, that's how easy it is.
+
+
+# State of the Wren
+This project was created with love, and it is one of the many side projects I work on in my spare time. I can not call Wrenegade a alpha, beta or production ready tool, you may at one point encounter issues. Please feel free to fix the issue if you can, and then open a pull request, your contributions are welcome.
 
 
 
