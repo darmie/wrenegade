@@ -65,13 +65,6 @@ import wren.VM;
 
 class MyClass extends wren.WrenClass {
     @:keep public var prop:String = "Yada!";
-    private static var instance:MyClass;
-    public static function getInstance():MyClass{
-        if(instance == null){
-            instance = new MyClass();
-        }
-        return instance;
-    }
     public function new(){}
 
     public function add(x:Int, y:Int) {
@@ -88,9 +81,6 @@ class MyClass extends wren.WrenClass {
     }
 }
 ```
-
-For instance properties and fields to be recognized by Wrenegade, you must declare a static call to your class called `getInstance()`
-
 Wrenegade will automatically generate binding functions for your class in the bindings directory you provided in `.wrenconfig`
 
 _generated c/c++ binding functions_
@@ -101,12 +91,14 @@ static void myclass_myclass_prop_set(WrenVM *vm){
 	
 	::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);
 	*value = ::wren::Helper_obj::getFromSlot(vm, 1);
-	 ::myclass::MyClass_obj::getInstance()->prop = *value;
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	inst->prop = *value;
 }
 
 static void myclass_myclass_prop_get(WrenVM *vm){
 	
-	auto val = ::myclass::MyClass_obj::getInstance()->prop;
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	auto val = inst->prop;
 	::ValueType type = ::Type_obj::_hx_typeof(val);
 	::wren::Helper_obj::saveToSlot(vm, 0, val, type);
 }
@@ -115,13 +107,15 @@ static void myclass_myclass_add(WrenVM *vm){
 	
 	auto arg0 = ::wren::Helper_obj::getFromSlot(vm, 1);
 	auto arg1 = ::wren::Helper_obj::getFromSlot(vm, 2);
-	::myclass::MyClass_obj::getInstance()->add(arg0, arg1);
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	inst->add(arg0, arg1);
 }
 
 static void myclass_myclass_calldyn(WrenVM *vm){
 	
 	auto arg0 = ::wren::Helper_obj::getFromSlot(vm, 1);
-	::myclass::MyClass_obj::getInstance()->callDyn(arg0);
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	inst->callDyn(arg0);
 }
 static void myclass_myclass_new(WrenVM *vm){
 	myclass::MyClass* constructor = (myclass::MyClass*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(myclass::MyClass));
@@ -131,6 +125,7 @@ static void myclass_myclass_new(WrenVM *vm){
 
 
 WrenForeignMethodFn bindMethod(const char* module, const char* signature) {
+	if (strcmp(module, "main") == 0){		if (strcmp(signature, "static Test.add(_,_)") == 0) return test_add;	}
 	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.prop=(_)") == 0) return myclass_myclass_prop_set;	}
 	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.prop") == 0) return myclass_myclass_prop_get;	}
 	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.add(_,_)") == 0) return myclass_myclass_add;	}
@@ -168,7 +163,7 @@ Create a main entry point to your Wren program:
 
 `{project_root}/scripts/main.wren`
 
-```dart
+```js
 import "myclass" for MyClass
 
 var mclass = MyClass.new()

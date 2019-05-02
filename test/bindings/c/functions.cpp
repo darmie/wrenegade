@@ -19,12 +19,14 @@ static void myclass_myclass_prop_set(WrenVM *vm){
 	
 	::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);
 	*value = ::wren::Helper_obj::getFromSlot(vm, 1);
-	 ::myclass::MyClass_obj::getInstance()->prop = *value;
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	inst->prop = *value;
 }
 
 static void myclass_myclass_prop_get(WrenVM *vm){
 	
-	auto val = ::myclass::MyClass_obj::getInstance()->prop;
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	auto val = inst->prop;
 	::ValueType type = ::Type_obj::_hx_typeof(val);
 	::wren::Helper_obj::saveToSlot(vm, 0, val, type);
 }
@@ -33,13 +35,15 @@ static void myclass_myclass_add(WrenVM *vm){
 	
 	auto arg0 = ::wren::Helper_obj::getFromSlot(vm, 1);
 	auto arg1 = ::wren::Helper_obj::getFromSlot(vm, 2);
-	::myclass::MyClass_obj::getInstance()->add(arg0, arg1);
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	inst->add(arg0, arg1);
 }
 
 static void myclass_myclass_calldyn(WrenVM *vm){
 	
 	auto arg0 = ::wren::Helper_obj::getFromSlot(vm, 1);
-	::myclass::MyClass_obj::getInstance()->callDyn(arg0);
+	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	inst->callDyn(arg0);
 }
 static void myclass_myclass_new(WrenVM *vm){
 	myclass::MyClass* constructor = (myclass::MyClass*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(myclass::MyClass));

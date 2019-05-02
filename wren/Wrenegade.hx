@@ -285,6 +285,7 @@ class Wrenegade {
 			content.add("\n");
 			content.add("\t");
 			content.add("\n");
+
 			if (params.length != 0) {
 				for (i in 0...params.length) {
 					content.add("\t");
@@ -292,18 +293,47 @@ class Wrenegade {
 					content.add("\n");
 				}
 				content.add("\t");
-				content.add(bindCMethodMap.get(sig));
+
+				if (bindCMethodMap.get(sig) != null) {
+					var method = bindCMethodMap.get(sig)
+						.split("->")
+						.length > 1 ? bindCMethodMap.get(sig)
+						.split("->")[1] : null;
+					if (method == null) {
+						content.add(bindCMethodMap.get(sig));
+					} else {
+						content.add('${cModule} inst = (${cModule})::wren::Helper_obj::getFromSlot(vm, 0);');
+						content.add("\n");
+						content.add("\t");
+						content.add('${'inst->' + method}');
+					}
+				}
 				content.add(";");
 				content.add("\n");
 			} else {
 				var _sig = sig.split("_");
 				var prop_type = _sig[_sig.length - 1];
 				var cval = cModule.replace("::", "_").replace("static ", "") + "_handle";
+				var method = null;
 				switch (prop_type) {
 					case "get":
 						{
+							
+							if (bindCMethodMap.get(sig.replace("_get", "")) != null) {
+								method = bindCMethodMap.get(sig.replace("_get", ""))
+									.split("->")
+									.length > 1 ? bindCMethodMap.get(sig.replace("_get", ""))
+									.split("->")[1] : null;
+							}
 							content.add("\t");
-							content.add('auto val = ${bindCMethodMap.get(sig.replace("_get", ""))};');
+							if (method == null) {
+								content.add('${bindCMethodMap.get(sig.replace("_get", ""))} = *value;');
+							} else {
+								content.add('${cModule} inst = (${cModule})::wren::Helper_obj::getFromSlot(vm, 0);\n');
+								content.add("\t");
+								content.add('auto val = inst->${method};');
+							}
+							// content.add('auto val = ${bindCMethodMap.get(sig.replace("_get", ""))};');
 							content.add("\n");
 							content.add("\t");
 							content.add("::ValueType type = ::Type_obj::_hx_typeof(val);");
@@ -311,10 +341,15 @@ class Wrenegade {
 							content.add("\t");
 							content.add('::wren::Helper_obj::saveToSlot(vm, 0, val, type);');
 							content.add("\n");
-							
 						}
 					case "set":
 						{
+							if (bindCMethodMap.get(sig.replace("_set", "")) != null) {
+								method = bindCMethodMap.get(sig.replace("_set", ""))
+									.split("->")
+									.length > 1 ? bindCMethodMap.get(sig.replace("_set", ""))
+									.split("->")[1] : null;
+							}
 							content.add("\t");
 							content.add('::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);');
 							content.add("\n");
@@ -325,7 +360,13 @@ class Wrenegade {
 							// content.add('::haxe::Log_obj::trace(*value);');
 							// content.add("\n");
 							content.add("\t");
-							content.add(' ${bindCMethodMap.get(sig.replace("_set", ""))} = *value;');
+							if (method == null) {
+								content.add('${bindCMethodMap.get(sig.replace("_set", ""))} = *value;');
+							} else {
+								content.add('${cModule} inst = (${cModule})::wren::Helper_obj::getFromSlot(vm, 0);\n');
+								content.add("\t");
+								content.add('inst->${method} = *value;');
+							}
 							content.add("\n");
 						}
 					case _:
