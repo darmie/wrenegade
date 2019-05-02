@@ -14,3 +14,7 @@ System.print(mclass.prop)
 
 System.print(mclass.superProp)
 
+mclass.superProp = "super yada!"
+
+System.print(mclass.superProp)
+
