@@ -6,9 +6,11 @@ import sys.io.File;
 import sys.FileSystem;
 import haxe.macro.Expr;
 import haxe.macro.Context;
+import haxe.macro.Type;
 import yaml.Yaml;
 import yaml.Parser;
 import yaml.util.ObjectMap;
+import Type as HaxeType;
 
 using StringTools;
 
@@ -85,6 +87,12 @@ class Wrenegade {
 
 	private static function createBindInclude() {
 		var fields:Array<Field> = Context.getBuildFields();
+		var start = null;
+		if (Reflect.hasField(Context.getLocalClass().get(), "superClass")) {
+			if (Context.getLocalClass().get().superClass.t.get().module != "wren.WrenClass") {
+				createBindSuperClass(Context.getLocalClass());
+			}
+		}
 
 		for (field in fields) {
 			switch (field.kind) {
@@ -105,7 +113,7 @@ class Wrenegade {
 						cFuncName += "_obj";
 						cFuncName += "::";
 						switch (field.access) {
-							case [APublic]: {
+							case [APublic] | [AOverride, APublic]: {
 									if (field.name.trim() != "new") {
 										cFuncName += "getInstance()";
 										cFuncName += "->";
@@ -149,7 +157,7 @@ class Wrenegade {
 						funcName += field.name;
 						funcName = funcName.toLowerCase();
 						switch (field.access) {
-							case [APublic]: {
+							case [APublic] | [AOverride, APublic]: {
 									if (field.name.trim() == "new") {
 										bindClassSignatureMap.set(funcName, signature.split("(")[0].replace(".new", ""));
 										bindCClassMap.set(funcName, cFuncName);
@@ -161,7 +169,11 @@ class Wrenegade {
 										var foreignFunc = "static void ";
 										foreignFunc += funcName;
 										foreignFunc += "(WrenVM *vm);";
-										foreignConstructorDec.push(foreignFunc);
+										if (foreignConstructorDec.indexOf(foreignFunc) != -1) {
+											// foreignConstructorDec[foreignFunc] = foreignFunc;
+										} else {
+											foreignConstructorDec.push(foreignFunc);
+										}
 									} else {
 										bindMethodMap.set(funcName, params);
 										bindCMethodMap.set(funcName, cFuncName);
@@ -170,7 +182,9 @@ class Wrenegade {
 										var foreignFunc = "static void ";
 										foreignFunc += funcName;
 										foreignFunc += "(WrenVM *vm);";
-										foreignFuncsDec.push(foreignFunc);
+										if (foreignFuncsDec.indexOf(foreignFunc) != -1) {} else {
+											foreignFuncsDec.push(foreignFunc);
+										}
 									}
 								}
 							case [AOverride, AStatic, APublic] | [AStatic, APublic] | [APublic, AStatic]: {
@@ -183,7 +197,9 @@ class Wrenegade {
 										var foreignFunc = "static void ";
 										foreignFunc += funcName;
 										foreignFunc += "(WrenVM *vm);";
-										foreignFuncsDec.push(foreignFunc);
+										if (foreignFuncsDec.indexOf(foreignFunc) != -1) {} else {
+											foreignFuncsDec.push(foreignFunc);
+										}
 									} else if (field.name.trim() == "getInstance") {
 										bindCClassArgsMap.set(funcName, params);
 										bindCModules.set(funcName, moduleName);
@@ -318,7 +334,6 @@ class Wrenegade {
 				switch (prop_type) {
 					case "get":
 						{
-							
 							if (bindCMethodMap.get(sig.replace("_get", "")) != null) {
 								method = bindCMethodMap.get(sig.replace("_get", ""))
 									.split("->")
@@ -503,6 +518,119 @@ class Wrenegade {
 		include.add("\n");
 		include.add("#endif");
 		sys.io.File.saveContent('${cpath}/functions.h', include.toString());
+	}
+
+	private static function createBindSuperClass(localClass:Ref<ClassType>) {
+		if (localClass.get().superClass.t.get().module != "wren.WrenClass") {
+			var fields = localClass.get().superClass.t.get().fields.get();
+
+			for (field in fields) {
+				if (field.isPublic) {
+					switch (field.kind) {
+						case FMethod(k):
+							{
+								var params = [];
+								var signature = "";
+
+								signature += className;
+								var cFuncName = "::";
+								cFuncName += bindCPath.replace(cpath, "").split("/").join("::");
+								cFuncName += "_obj";
+								cFuncName += "::";
+								cFuncName += "getInstance()";
+								cFuncName += "->";
+								cFuncName += field.name;
+								signature += ".";
+								signature += field.name;
+								signature += "(";
+								switch (field.expr().expr) {
+									case TFunction(f): {
+											var _args = f.args;
+											if (_args.length > 0) {
+												cFuncName += "(";
+												for (i in 0..._args.length) {
+													var arg = _args[i];
+
+													if (arg != null) {
+														cFuncName += 'arg${_args.indexOf(arg)}';
+														signature += "_";
+														params.push('arg${_args.indexOf(arg)}');
+
+														if (_args.indexOf(arg) != _args.length - 1) {
+															cFuncName += ", ";
+															signature += ",";
+														}
+													}
+												}
+												cFuncName += ")";
+												signature += ")";
+											} else {
+												cFuncName += "()";
+												signature += "_)";
+											}
+											var funcName = bindCPath.replace(cpath, "").split("/").join("_");
+											funcName += "_";
+											funcName += field.name;
+											funcName = funcName.toLowerCase();
+											bindMethodMap.set(funcName, params);
+											bindCMethodMap.set(funcName, cFuncName);
+											bindSignatureMap.set(funcName, signature);
+
+											var foreignFunc = "static void ";
+											foreignFunc += funcName;
+											foreignFunc += "(WrenVM *vm);";
+											foreignFuncsDec.push(foreignFunc);
+										}
+									case _:
+								}
+							}
+						case FVar(r, w):
+							{
+								var params = [];
+								var signature = "";
+								signature += className;
+								var cFuncName = "::";
+								cFuncName += bindCPath.replace(cpath, "").split("/").join("::");
+								cFuncName += "_obj";
+								cFuncName += "::";
+								cFuncName += "getInstance()";
+								cFuncName += "->";
+
+								cFuncName += field.name;
+								signature += ".";
+								signature += field.name;
+								signature += "=(";
+								signature += "_)";
+
+								var funcName = bindCPath.replace(cpath, "").split("/").join("_");
+								funcName += "_";
+								funcName += field.name;
+								funcName = funcName.toLowerCase();
+
+								bindMethodMap.set(funcName, null);
+								bindCMethodMap.set(funcName, cFuncName);
+								bindSignatureMap.set(funcName + "_set", signature);
+								bindSignatureMap.set(funcName + "_get", signature.replace("=(_)", ""));
+
+								var foreignFunc = "static void ";
+								foreignFunc += funcName + "_set";
+								foreignFunc += "(WrenVM *vm);";
+								foreignFuncsDec.push(foreignFunc);
+								var _foreignFunc = "static void ";
+								_foreignFunc += funcName + "_get";
+								_foreignFunc += "(WrenVM *vm);";
+								foreignFuncsDec.push(_foreignFunc);
+							}
+					}
+				}
+			}
+		}
+
+		if (Reflect.hasField(localClass.get().superClass.t.get(), "superClass")) {
+			if (localClass.get().superClass.t.get().superClass.t.get().module != "wren.WrenClass") {
+				createBindSuperClass(localClass);
+			}
+		}
 	}
 }
 #end
