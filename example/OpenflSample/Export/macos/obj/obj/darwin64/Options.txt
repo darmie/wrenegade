@@ -1,2 +1,0 @@
-hxcpp_api_level=400
-hxcpp=/usr/local/lib/haxe/lib/hxcpp/4,0,8/
