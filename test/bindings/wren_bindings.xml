@@ -4,6 +4,9 @@
 	<files id='haxe'>
 		<precompiledheader name="wren_bindings" dir="/Users/damilare/Documents/projects/Wrenegade/test/bindings" />
 		<precompiledheader name="wren" dir="/Users/damilare/Documents/projects/Wrenegade/test/../lib/wren/src/include" />
-		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/functions.cpp" />
+		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/myclass/subpack/Hello/Hello.cpp" />
+		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/myclass/MySuperClass/MySuperClass.cpp" />
+		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/myclass/MyClass/MyClass.cpp" />
+		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/wren_bindings.cpp" />
 	</files>
 </xml>

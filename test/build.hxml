@@ -1,12 +1,22 @@
 -cp ../
 -cp ./
--dce std
+
+
+-dce no
 -lib yaml
+# -lib lime
+# -lib openfl
+
 -main Test
+Type
+
+# --macro addMetadata('@:autoBuild(wren.Wrenegade.bind())', 'myclass')
+
 
 # --interp
 -cpp cpp/
 
 -D mac
+-D lime
 -D HXCPP_M64
 #-D HXCPP_VERBOSE

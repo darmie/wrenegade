@@ -10,7 +10,6 @@
 #include <wren_bindings.h>
 #endif
 
-#include <wren/Helper.h>
 
 extern "C"
 {
@@ -30,6 +29,8 @@ static void* getFromSlot(WrenVM * vm, int slot);
 static WrenType getSlotType(WrenVM *vm, int slot);
 static void *setSlotNewForeign(WrenVM *vm, int slot, int classSlot, size_t size);
 static void saveToSlot(WrenVM *vm, int slot, void *value, const char *type);
+WrenForeignClassMethods bindForeignClass(WrenVM *vm, const char *module, const char *className);
+WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char *className, bool isStatic, const char *signature);
 
 } // namespace wren
 

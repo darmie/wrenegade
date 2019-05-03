@@ -7,6 +7,7 @@ import wren.Wren.WrenType;
 import wren.Wren.WrenInterpretResult;
 
 import wren.Wren;
+import Type;
 
 
 typedef WrenErr = String;

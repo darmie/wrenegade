@@ -1,4 +1,5 @@
 #include "./linc_wren.h"
+#include "./linc_helper.h"
 
 #include <hxcpp.h>
 
@@ -78,7 +79,7 @@ WrenForeignClassMethods bindForeignClass(WrenVM *vm, const char *module, const c
 {
 	WrenForeignClassMethods holder;
 	holder.finalize = NULL;
-	bindings::functions::bindClass(module, className, &holder);
+	wrenegade::bindClass(module, className, &holder);
 
 	return holder;
 }
@@ -92,13 +93,13 @@ WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char
 	}
 	
 	fullName << className << "." << signature;
-	// printf("%s\n", fullName.str().c_str());
-	return bindings::functions::bindMethod(module, fullName.str().c_str());
+	
+	return wrenegade::bindMethod(module, className, fullName.str().c_str());
 };
 
 void writeErr(WrenVM *vm, WrenErrorType errorType, const char *module, int line, const char *message)
 {
-	::wren::Helper_obj::writeErr(vm, errorType, module, line, message);
+	linc::helper::writeErr(vm, errorType, module, line, message);
 }
 
 WrenVM *newVM(Dynamic _config)
@@ -129,12 +130,6 @@ WrenVM *newVM(Dynamic _config)
 		{
 			config.heapGrowthPercent = _config->__FieldRef(HX_CSTRING("heapGrowthPercent"));
 		}
-		// if(_config->__FieldRef(HX_CSTRING("bindForeignClassFn")) != null()){
-		//     config.bindForeignClassFn = bindClass;
-		// }
-		// if(_config->__FieldRef(HX_CSTRING("bindForeignMethodFn")) != null()){
-		//     config.bindForeignMethodFn = bindMethod;
-		// }
 	}
 
 	return wrenNewVM(&config);
@@ -156,80 +151,7 @@ static void *setSlotNewForeign(WrenVM *vm, int slot, int classSlot, size_t size)
 	return wrenSetSlotNewForeign(vm, 0, 0, 8);
 }
 
-// static void saveToSlot(WrenVM *vm, int slot, void *value, const char *type)
-// {
-// 	switch (std::string(type))
-// 	{
-// 	case std::string("Int"):
-// 	{
-// 		wrenSetSlotDouble(vm, slot, (double)*value);
-// 	}
-// 	case "Float":
-// 	{
-// 		wrenSetSlotDouble(vm, slot, (double)*value);
-// 	}
-// 	case "Bool":
-// 	{
-// 		wrenSetSlotBool(vm, slot, (bool)*value);
-// 	}
-// 	case "String":
-// 	{
-// 		wrenSetSlotString(vm, slot, (const char*)*value);
-// 	}
-// 	case "Null":
-// 	{
-// 		wrenSetSlotNull(vm, slot);
-// 	}
-// 	case "Unknown":
-// 	{
-// 		wrenSetSlotNull(vm, slot);
-// 	}
-// 	default:
-// 	{
-// 		throw 'don\'t know how to save type to a slot';
-// 	}
-// 	}
-// }
 
-static void *getFromSlot(WrenVM *vm, int slot)
-{
-	return NULL;
-	// switch(getSlotType(vm, slot)){
-	// 	case WREN_TYPE_BOOL:{
-	// 		bool value = wrenGetSlotBool(vm, slot);
-	// 		return &value;
-	// 	};
-	// 	case WREN_TYPE_NUM:{
-	// 		double value = wrenGetSlotDouble(vm, slot);
-	// 		return &value;
-	// 	};
-	// 	case WREN_TYPE_STRING:{
-	// 		const char* value = (const char*)wrenGetSlotString(vm, slot);
-	// 		return &value;
-	// 	};
-	// 	case WREN_TYPE_NULL:{
-	// 		return null();
-	// 	};
-	// 	case WREN_TYPE_UNKNOWN:{
-	// 		return null();
-	// 	};
-	// 	// case WREN_TYPE_LIST:{
-	// 	// 	int count = wrenGetListCount(vm, slot);
-	// 	// 	::cpp::VirtualArray* result = ::cpp::VirtualArray_obj::__new(count,0);
-	// 	// 	for(int i=0;i<count;i++){
-	// 	// 		wrenGetListElement(vm, slot, i, 0);
-	// 	// 		auto elem = getFromSlot(vm, 0);
-	// 	// 		result->__unsafe_set(i, elem);
-	// 	// 	}
-	// 	// };
-	// 	case WREN_TYPE_FOREIGN:{
-	// 		auto value = (::Dynamic *) wrenGetSlotForeign(vm, slot);
-	// 		return &value;
-	// 	}
-	// 	default: {
-	// 		return null();
-	// 	}
-}
 
 } // namespace wren
 

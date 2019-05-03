@@ -1,32 +1,37 @@
 
 
-import myclass.MyClass;
-import wren.VM;
 
-class Test extends wren.WrenClass {
+import myclass.MyClass;
+import myclass.subpack.Hello;
+// import myclass.MySuperClass;
+import wren.VM;
+// import openfl.display.Sprite;
+
+
+class Test /*extends wren.WrenClass*/ {
 
 	public static function main() {
-        runStatic();
+        // runStatic();
         runInstance();
     }
 
-	private static function runStatic() {
-		var program:String = '
-        foreign class Test {
-            foreign static add(x, y)
-        }
-        Test.add(5, 20)';
-		var vm = new VM();
-		try {
-			var err = vm.interpret("main", program);
-			if (err != null) {
-				throw err;
-			}
-			vm.stop();
-		} catch (e:Dynamic) {
-			throw e;
-		}
-	}
+	// private static function runStatic() {
+	// 	var program:String = '
+    //     foreign class Test {
+    //         foreign static add(x, y)
+    //     }
+    //     Test.add(5, 20)';
+	// 	var vm = new VM();
+	// 	try {
+	// 		var err = vm.interpret("main", program);
+	// 		if (err != null) {
+	// 			throw err;
+	// 		}
+	// 		vm.stop();
+	// 	} catch (e:Dynamic) {
+	// 		throw e;
+	// 	}
+	// }
 
 
 	private static function runInstance() {
@@ -43,7 +48,7 @@ class Test extends wren.WrenClass {
 		}
 	}
 
-	static public function add(x:Dynamic, y:Dynamic) {
-		trace(x + y);
-	}
+	// static public function add(x:Dynamic, y:Dynamic) {
+	// 	trace(x + y);
+	// }
 }

@@ -1,0 +1,5 @@
+package openfl;
+
+class DisplayObject {
+    
+}

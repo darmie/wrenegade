@@ -1,5 +1,7 @@
 package myclass;
 
+import wren.WrenVM;
+
 class MyClass extends MySuperClass {
 	public var prop:String = "Yada!";
 

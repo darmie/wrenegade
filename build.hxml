@@ -1,12 +1,16 @@
 -cp wren/
-# -cp test/
--dce std
+-cp test/
+-dce no
 -lib yaml
-# -main test.Test
+-main Test
 
-# # --interp
+# --macro addGlobalMetadata('openfl', '@:autoBuild(wren.Wrenegade.bind())')
+
+
+
+# --interp
 -cpp cpp/
 
-# -D mac
-# -D HXCPP_M64
-# -D HXCPP_VERBOSE
+-D mac
+-D HXCPP_M64
+#-D HXCPP_VERBOSE
