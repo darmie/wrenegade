@@ -1,5 +1,6 @@
 import "myclass" for MyClass
 import "myclass_subpack" for Hello
+import "test" for Test
 
 class TestClass {
     construct new() {
@@ -37,4 +38,7 @@ System.print(mclass.superProp)
 var hello = Hello.new()
 
 hello.shout("Yippe Yay!!")
+
+
+Test.add(5, 20)
 

@@ -612,8 +612,7 @@ class Wrenegade {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var _sig = sig.split("_");
 			var module = "";
-			// trace(func);
-			// trace(packageMap.get(func));
+		
 			if (packageMap.exists(func)) {
 				var pack = packageMap.get(func).split(".");
 				pack.pop();
@@ -623,9 +622,6 @@ class Wrenegade {
 				} else if (pack.length > 1) {
 					module = pack.join("_");
 				}
-			}else {
-				trace(func);
-				trace(packageMap);
 			}
 
 			content.add("\t");
@@ -797,10 +793,6 @@ class Wrenegade {
 											foreignFunc += funcName;
 											foreignFunc += "(WrenVM *vm);";
 											foreignFuncsDec.push(foreignFunc);
-
-											trace(foreignFunc);
-											trace(field.name);
-											trace(moduleName.replace(className, ""));
 											packageMap.set(foreignFunc, moduleName.replace(className, ""));
 										}
 									case _:

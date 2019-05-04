@@ -1,9 +1,16 @@
 #include "c/myclass/subpack/Hello/Hello.h"
 #include "c/myclass/MySuperClass/MySuperClass.h"
 #include "c/myclass/MyClass/MyClass.h"
+#include "c/test/Test/Test.h"
 #include "wren_bindings.h"
 namespace wrenegade {
 void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {
+	if (strcmp(module, "test") == 0){
+			
+		if (strcmp(className, "Test") == 0){
+			::test_Test_functions::bindClass(module, className, methods); return;
+		}
+	}
 	if (strcmp(module, "myclass_subpack") == 0){
 			
 		if (strcmp(className, "Hello") == 0){
@@ -24,6 +31,13 @@ void bindClass(const char* module, const char* className, WrenForeignClassMethod
 
 }
 WrenForeignMethodFn bindMethod(const char* module, const char *className, const char* signature) {
+
+		if (strcmp(module, "test") == 0){
+			
+		if (strcmp(className, "Test") == 0){
+			return ::test_Test_functions::bindMethod(module, signature);
+		}
+	}
 
 		if (strcmp(module, "myclass_subpack") == 0){
 			
