@@ -1,3 +1,6 @@
+#include "c/myclass/subpack/Hello/Hello.h"
+#include "c/myclass/MySuperClass/MySuperClass.h"
+#include "c/myclass/MyClass/MyClass.h"
 #include "wren_bindings.h"
 namespace wrenegade {
 void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {

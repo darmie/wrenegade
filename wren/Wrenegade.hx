@@ -78,7 +78,7 @@ class Wrenegade {
 			var sig = module.replace("c/", "").replace("/", "_").replace('_${cls}', "");
 			var path = 'bindings/${module}';
 			FileSystem.createDirectory(path);
-			wren_bindings.add('#include "${module}/${cls}.h"\n');
+			wren_cbindings.add('#include "${module}/${cls}.h"\n');
 			if (pack_sigs.exists(sig)) {
 				var mod = pack_sigs.get(sig);
 				if (mod.indexOf(cls) == -1) {
@@ -89,7 +89,7 @@ class Wrenegade {
 				pack_sigs.set(sig, [cls]);
 			}
 		}
-		
+
 		wren_cbindings.add('#include "wren_bindings.h"');
 		wren_bindings.add("\n");
 		wren_bindings.add('extern "C"');
@@ -223,13 +223,6 @@ class Wrenegade {
 	private static function createBindInclude() {
 		var fields:Array<Field> = Context.getBuildFields();
 		var start = null;
-
-		if (Reflect.hasField(Context.getLocalClass().get(), "superClass")) {
-			if (Context.getLocalClass().get().superClass != null
-				&& Context.getLocalClass().get().superClass.t.get().module != "wren.WrenClass") {
-				createBindSuperClass(Context.getLocalClass());
-			}
-		}
 
 		for (field in fields) {
 			switch (field.kind) {
@@ -411,18 +404,39 @@ class Wrenegade {
 			}
 		}
 
+		var includes = [];
 		var content = new StringBuf();
 
+		if (Reflect.hasField(Context.getLocalClass().get(), "superClass")) {
+			if (Context.getLocalClass().get().superClass != null
+				&& Context.getLocalClass().get().superClass.t.get().module != "wren.WrenClass") {
+				createBindSuperClass(bindCPath, cpath, Context.getLocalClass(), className, moduleName, bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec, packageMap,
+					runInclude.bind(bindCPath, className, includes[0], foreignFuncsDec, content),
+					genContent.bind(moduleName, bindCModules, 
+						bindCPath, content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap, bindCClassArgsMap, bindClassSignatureMap, foreignFuncsDec, foreignConstructorDec, packageMap));
+				return;
+			} else {
+				
+				genContent(moduleName, bindCModules, bindCPath, content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap, bindCClassArgsMap, bindClassSignatureMap, foreignFuncsDec, foreignConstructorDec, packageMap);
+				return;
+			}
+		}
+	}
+
+	private static function genContent(moduleName:String, bindCModules:Map<String, String> , bindCPath:String, content:StringBuf, includes:Array<String>, className:String,
+			bindMethodMap:Map<String, Array<String>>, bindCMethodMap:Map<String, String>, bindSignatureMap:Map<String, String>, bindCClassArgsMap:Map<String, Array<String>>, bindClassSignatureMap:Map<String, String>, foreignFuncsDec:Array<String>, foreignConstructorDec:Array<String>,
+			packageMap:Map<String, String>) {
+
+		
 		var cModule = moduleName.replace(".", "::");
 
 		content.add('#include "${className}.h"');
 		content.add("\n");
 		content.add("\n");
-		
+
 		content.add('#include <linc_helper.h>');
 		content.add("\n");
-	
-		
+
 		content.add("\n");
 		content.add('#ifndef INCLUDED_type\n');
 		content.add("#include <Type.h>");
@@ -431,7 +445,6 @@ class Wrenegade {
 		content.add("\n");
 		// content.add('#include <wren/Helper.h>');
 		content.add("\n");
-		var includes = [];
 		for (inc in bindCModules) {
 			if (includes.indexOf(inc) == -1) {
 				content.add('#include <${inc.replace(".", "/").replace("static ", "")}.h>');
@@ -599,6 +612,8 @@ class Wrenegade {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var _sig = sig.split("_");
 			var module = "";
+			// trace(func);
+			// trace(packageMap.get(func));
 			if (packageMap.exists(func)) {
 				var pack = packageMap.get(func).split(".");
 				pack.pop();
@@ -608,6 +623,9 @@ class Wrenegade {
 				} else if (pack.length > 1) {
 					module = pack.join("_");
 				}
+			}else {
+				trace(func);
+				trace(packageMap);
 			}
 
 			content.add("\t");
@@ -667,10 +685,14 @@ class Wrenegade {
 
 		sys.io.File.saveContent('${bindCPath}/${className}.cpp', content.toString());
 
+		runInclude(bindCPath, className, includes[0], foreignFuncsDec, content);
+	}
+
+	private static function runInclude(bindCPath, className, _includes:String, foreignFuncsDec:Array<String>, content:StringBuf) {
 		var include = new StringBuf();
-		include.add('#ifndef _bindings_${includes[0].replace(".", "_").replace("static ", "")}_h');
+		include.add('#ifndef _bindings_${_includes.replace(".", "_").replace("static ", "")}_h');
 		include.add("\n");
-		include.add('#define _bindings_${includes[0].replace(".", "_").replace("static ", "")}_h');
+		include.add('#define _bindings_${_includes.replace(".", "_").replace("static ", "")}_h');
 		include.add("\n");
 		include.add('#include <hxcpp.h>');
 		include.add("\n");
@@ -692,7 +714,7 @@ class Wrenegade {
 		include.add("\n");
 		// include.add("namespace bindings {");
 		include.add("\n");
-		include.add('namespace ${includes[0].replace(".", "_").replace("static ", "")}_functions  {');
+		include.add('namespace ${_includes.replace(".", "_").replace("static ", "")}_functions  {');
 		include.add("\n");
 		for (func in foreignFuncsDec) {
 			include.add(func);
@@ -708,10 +730,14 @@ class Wrenegade {
 		// include.add('}');
 		include.add("\n");
 		include.add("#endif");
+
 		sys.io.File.saveContent('${bindCPath}/${className}.h', include.toString());
+		//
+		// genContent(content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec);
 	}
 
-	private static function createBindSuperClass(localClass:Ref<ClassType>) {
+	private static function createBindSuperClass(bindCPath:String, cpath:String, localClass:Ref<ClassType>, className:String, moduleName:String, bindMethodMap, bindCMethodMap,
+			bindSignatureMap, foreignFuncsDec, packageMap:Map<String, String>, ?cb, ?cb2) {
 		if (localClass.get().superClass.t.get().module != "wren.WrenClass") {
 			var fields = localClass.get().superClass.t.get().fields.get();
 
@@ -771,6 +797,10 @@ class Wrenegade {
 											foreignFunc += funcName;
 											foreignFunc += "(WrenVM *vm);";
 											foreignFuncsDec.push(foreignFunc);
+
+											trace(foreignFunc);
+											trace(field.name);
+											trace(moduleName.replace(className, ""));
 											packageMap.set(foreignFunc, moduleName.replace(className, ""));
 										}
 									case _:
@@ -823,7 +853,9 @@ class Wrenegade {
 		if (Reflect.hasField(localClass.get().superClass.t.get(), "superClass")) {
 			if (localClass.get().superClass.t.get().superClass != null
 				&& localClass.get().superClass.t.get().superClass.t.get().module != "wren.WrenClass") {
-				createBindSuperClass(localClass);
+				createBindSuperClass(bindCPath, cpath, localClass, className, moduleName, bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec, packageMap, cb, cb2);
+			} else {
+				cb2();
 			}
 		}
 	}

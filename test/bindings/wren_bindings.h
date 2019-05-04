@@ -1,8 +1,5 @@
 #ifndef _WREN_BINDINGS_
 #define _WREN_BINDINGS_
-#include "c/myclass/subpack/Hello/Hello.h"
-#include "c/myclass/MySuperClass/MySuperClass.h"
-#include "c/myclass/MyClass/MyClass.h"
 
 extern "C"
 {

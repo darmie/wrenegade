@@ -1,8 +1,8 @@
 
 
 
-import myclass.MyClass;
-import myclass.subpack.Hello;
+// import myclass.MyClass;
+// import myclass.subpack.Hello;
 // import myclass.MySuperClass;
 import wren.VM;
 // import openfl.display.Sprite;

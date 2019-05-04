@@ -2,15 +2,24 @@
 -cp ./
 
 
--dce no
+-dce std
 -lib yaml
 # -lib lime
 # -lib openfl
 
 -main Test
 Type
+Std
 
-# --macro addMetadata('@:autoBuild(wren.Wrenegade.bind())', 'myclass')
+
+
+
+myclass.MyClass
+myclass.subpack.Hello
+
+
+
+
 
 
 # --interp
