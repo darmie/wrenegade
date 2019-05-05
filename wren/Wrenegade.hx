@@ -648,7 +648,7 @@ class Wrenegade {
 		runInclude(bindCPath, className, includes[0], foreignFuncsDec, content);
 
 		var module = includes[0].replace("." + className, "").replace(".", "_").replace("static ", "");
-		genWrenExterns(className, module, signatures, hasConstructor, constructorParamSize);
+		genWrenExterns(new StringBuf(), className, module, signatures, hasConstructor, constructorParamSize);
 	}
 
 	private static function runInclude(bindCPath, className, _includes:String, foreignFuncsDec:Array<String>, content:StringBuf) {
@@ -693,9 +693,12 @@ class Wrenegade {
 
 	private static function createBindSuperClass(bindCPath:String, cpath:String, localClass:Ref<ClassType>, className:String, moduleName:String,
 			bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec, packageMap:Map<String, String>, ?cb) {
+		var signatures = [];
+		var constructorParamSize = 0;
+		var superClassName = localClass.get().superClass.t.get().name;
+
 		if (localClass.get().superClass.t.get().module != "wren.WrenClass") {
 			var fields = localClass.get().superClass.t.get().fields.get();
-
 			for (field in fields) {
 				if (field.isPublic) {
 					switch (field.kind) {
@@ -718,6 +721,9 @@ class Wrenegade {
 								switch (field.expr().expr) {
 									case TFunction(f): {
 											var _args = f.args;
+											if(field.name == "new"){
+												constructorParamSize = _args.length;
+											}
 											if (_args.length > 0) {
 												cFuncName += "(";
 												for (i in 0..._args.length) {
@@ -747,6 +753,7 @@ class Wrenegade {
 											bindMethodMap.set(funcName, params);
 											bindCMethodMap.set(funcName, cFuncName);
 											bindSignatureMap.set(funcName, signature);
+											signatures.push(signature.replace(className, superClassName));
 
 											var foreignFunc = "static void ";
 											foreignFunc += funcName;
@@ -784,6 +791,9 @@ class Wrenegade {
 								bindCMethodMap.set(funcName, cFuncName);
 								bindSignatureMap.set(funcName + "_set", signature);
 								bindSignatureMap.set(funcName + "_get", signature.replace("=(_)", ""));
+								signatures.push(signature.replace(className, superClassName));
+								signatures.push(signature.replace("=(_)", "").replace(className, superClassName));
+								
 
 								var foreignFunc = "static void ";
 								foreignFunc += funcName + "_set";
@@ -810,10 +820,37 @@ class Wrenegade {
 				cb();
 			}
 		}
+		var wrenPath = '${bindingsDir}/wren';
+		var module = moduleName.replace("."+className, "");
+		var path = "";
+		if(module.indexOf("_") != -1){
+			var spl = module.split("_");
+			module = spl[spl.length - 1];
+			spl.splice(spl.length - 1, 1);
+			path = spl.join("/");
+			wrenPath = '${bindingsDir}/wren/${path}';
+		} else {
+			path = '${bindingsDir}/wren/${module}';
+		}
+
+		var content = "";
+		var wren = new StringBuf();
+		if(FileSystem.exists(wrenPath)){
+			content = sys.io.File.getContent('${wrenPath}/${module}.wren');
+			wren.add("\n");
+			wren.add(content);
+			wren.add("\n");
+			wren.add("\n");
+		}
+
+		
+		genWrenExterns(wren, superClassName, module, signatures, true, constructorParamSize);
 	}
 
-	private static function genWrenExterns(className:String, module:String, signatures:Array<String>, hasConstructor:Bool = false,
+	private static function genWrenExterns(buf:StringBuf, className:String, module:String, signatures:Array<String>, hasConstructor:Bool = false,
 			constructorParamsSize:Int) {
+
+		var wren = buf;
 		var wrenPath = '${bindingsDir}/wren';
 		var path = "";
 		if(module.indexOf("_") != -1){
@@ -821,16 +858,17 @@ class Wrenegade {
 			module = spl[spl.length - 1];
 			spl.splice(spl.length - 1, 1);
 			path = spl.join("/");
-			trace(path);
 			wrenPath = '${bindingsDir}/wren/${path}';
 		} else {
 			path = '${bindingsDir}/wren/${module}';
 		}
 		
+		if(!FileSystem.exists(wrenPath)){
+			FileSystem.createDirectory(wrenPath);
+		}
 		
-		FileSystem.createDirectory(wrenPath);
 
-		var wren = new StringBuf();
+		
 		wren.add('foreign class ${className} {\n');
 
 		if (hasConstructor) {
@@ -864,6 +902,8 @@ class Wrenegade {
 			}
 		}
 		wren.add("}\n");
+
+
 
 		sys.io.File.saveContent('${wrenPath}/${module}.wren', wren.toString());
 	}

@@ -97,16 +97,26 @@ _generated wren externs_
 `{project_root}/bindings/wren/myclass.wren`
 
 ```dart 
+
 foreign class MyClass {
 	construct new(){}
 	foreign prop=(arg1)
 	foreign prop
 	foreign add(arg1,arg2)
 	foreign callDyn(arg1)
-	foreign superProp=(arg1) // generated from super class 'MySuperClass.hx'
-	foreign superProp // generated from super class 'MySuperClass.hx'
-	foreign graphicsBeginFill(arg1,arg2) // generated from super class 'MySuperClass.hx'
+	foreign superProp=(arg1)
+	foreign superProp
+	foreign graphicsBeginFill(arg1,arg2)
 }
+
+
+foreign class MySuperClass {
+	construct new(){}
+	foreign superProp=(arg1)
+	foreign superProp
+	foreign graphicsBeginFill(arg1,arg2)
+}
+
 ```
 
 _generated c/c++ binding functions_
