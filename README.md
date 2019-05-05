@@ -36,7 +36,16 @@ Add these lines at the top of the file: _(replace `{project_root}` with the rela
 -cp {project_root}/wrenegade/wren
 -cp {project_root}/src ## path to your project source, let's assume it's ./src
 
+-dce std  # Dead code elimination. Reduce overrall package size to only stuff we need. https://haxe.org/manual/cr-dce.html
 -lib yaml
+
+# list of standard haxe packages that wrenegade needs. Important!
+Type
+Std
+
+# list of Haxe classes we need to generate bindings for
+myclass.MyClass
+myclass.subpack.Hello
 
 -cpp bin/cpp ## Tell haxe where to put the generated C++ files and binary
 
@@ -63,7 +72,7 @@ _note that for Wrenegade to gerate bindings, your haxe class must extend wren.Wr
 package myclass;
 import wren.VM;
 
-class MyClass extends wren.WrenClass {
+class MyClass extends MySuperClass {
     @:keep public var prop:String = "Yada!";
     public function new(){}
 
@@ -83,99 +92,139 @@ class MyClass extends wren.WrenClass {
 ```
 Wrenegade will automatically generate binding functions for your class in the bindings directory you provided in `.wrenconfig`
 
+_generated wren externs_
+
+`{project_root}/bindings/wren/myclass.wren`
+
+```dart 
+foreign class MyClass {
+	construct new(){}
+	foreign prop=(arg1)
+	foreign prop
+	foreign add(arg1,arg2)
+	foreign callDyn(arg1)
+	foreign superProp=(arg1) // generated from super class 'MySuperClass.hx'
+	foreign superProp // generated from super class 'MySuperClass.hx'
+	foreign graphicsBeginFill(arg1,arg2) // generated from super class 'MySuperClass.hx'
+}
+```
+
 _generated c/c++ binding functions_
 
-`{project_root}/bindings/c/functions.cpp`
+`{project_root}/bindings/c/myclass/MyClass/functions.cpp`
 ```cpp
+namespace myclass_MyClass_functions {
+
 static void myclass_myclass_prop_set(WrenVM *vm){
 	
 	::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);
-	*value = ::wren::Helper_obj::getFromSlot(vm, 1);
-	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	*value = linc::helper::getFromSlot(vm, 1);
+	::myclass::MyClass inst = (::myclass::MyClass)linc::helper::getFromSlot(vm, 0);
 	inst->prop = *value;
 }
 
 static void myclass_myclass_prop_get(WrenVM *vm){
 	
-	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	::myclass::MyClass inst = (::myclass::MyClass)linc::helper::getFromSlot(vm, 0);
 	auto val = inst->prop;
 	::ValueType type = ::Type_obj::_hx_typeof(val);
-	::wren::Helper_obj::saveToSlot(vm, 0, val, type);
+	linc::helper::saveToSlot(vm, 0, val, type);
 }
 
 static void myclass_myclass_add(WrenVM *vm){
 	
-	auto arg0 = ::wren::Helper_obj::getFromSlot(vm, 1);
-	auto arg1 = ::wren::Helper_obj::getFromSlot(vm, 2);
-	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	auto arg0 = linc::helper::getFromSlot(vm, 1);
+	auto arg1 = linc::helper::getFromSlot(vm, 2);
+	::myclass::MyClass inst = (::myclass::MyClass)linc::helper::getFromSlot(vm, 0);
 	inst->add(arg0, arg1);
 }
 
 static void myclass_myclass_calldyn(WrenVM *vm){
 	
-	auto arg0 = ::wren::Helper_obj::getFromSlot(vm, 1);
-	myclass::MyClass inst = (myclass::MyClass)::wren::Helper_obj::getFromSlot(vm, 0);
+	auto arg0 = linc::helper::getFromSlot(vm, 1);
+	::myclass::MyClass inst = (::myclass::MyClass)linc::helper::getFromSlot(vm, 0);
 	inst->callDyn(arg0);
 }
+
+static void myclass_myclass_superprop_set(WrenVM *vm){
+	
+	::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);
+	*value = linc::helper::getFromSlot(vm, 1);
+	::myclass::MyClass inst = (::myclass::MyClass)linc::helper::getFromSlot(vm, 0);
+	inst->superProp = *value;
+}
+
+static void myclass_myclass_superprop_get(WrenVM *vm){
+	
+	::myclass::MyClass inst = (::myclass::MyClass)linc::helper::getFromSlot(vm, 0);
+	auto val = inst->superProp;
+	::ValueType type = ::Type_obj::_hx_typeof(val);
+	linc::helper::saveToSlot(vm, 0, val, type);
+}
+
+static void myclass_myclass_graphicsbeginfill(WrenVM *vm){
+	
+	auto arg0 = linc::helper::getFromSlot(vm, 1);
+	auto arg1 = linc::helper::getFromSlot(vm, 2);
+	::myclass::MyClass inst = (::myclass::MyClass)linc::helper::getFromSlot(vm, 0);
+	inst->graphicsBeginFill(arg0, arg1);
+}
 static void myclass_myclass_new(WrenVM *vm){
-	myclass::MyClass* constructor = (myclass::MyClass*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(myclass::MyClass));
-	auto data = ::myclass::MyClass_obj::__new();
-	std::memcpy(constructor, &data, sizeof(myclass::MyClass));
+	::myclass::MyClass* constructor = (myclass::MyClass*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::myclass::MyClass));
+	::myclass::MyClass_obj obj;
+	auto data = obj.__new();
+	std::memcpy(constructor, &data, sizeof(::myclass::MyClass));
 }
 
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature) {
-	if (strcmp(module, "main") == 0){		if (strcmp(signature, "static Test.add(_,_)") == 0) return test_add;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.prop=(_)") == 0) return myclass_myclass_prop_set;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.prop") == 0) return myclass_myclass_prop_get;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.add(_,_)") == 0) return myclass_myclass_add;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.callDyn(_)") == 0) return myclass_myclass_calldyn;	}
+WrenForeignMethodFn bindMethod(const char* signature) {
+	if (strcmp(signature, "MyClass.prop=(_)") == 0) return myclass_myclass_prop_set;
+	if (strcmp(signature, "MyClass.prop") == 0) return myclass_myclass_prop_get;
+	if (strcmp(signature, "MyClass.add(_,_)") == 0) return myclass_myclass_add;
+	if (strcmp(signature, "MyClass.callDyn(_)") == 0) return myclass_myclass_calldyn;
+	if (strcmp(signature, "MyClass.superProp=(_)") == 0) return myclass_myclass_superprop_set;
+	if (strcmp(signature, "MyClass.superProp") == 0) return myclass_myclass_superprop_get;
+	if (strcmp(signature, "MyClass.graphicsBeginFill(_,_)") == 0) return myclass_myclass_graphicsbeginfill;
 	return NULL;
 }
 
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {
-	if (strcmp(module, "myclass") == 0){
-		if (strcmp(className, "MyClass") == 0) { 
-			methods->allocate = myclass_myclass_new; 
- 			return; 
-		}
-	}
+void bindClass(WrenForeignClassMethods* methods) {
+	methods->allocate = myclass_myclass_new; 
+ 	return;
+}
 }
 ```
 
 __Embedding Wren scripts__:
 
-Create an equivalent of your class in Wren language:
-
-`{project_root}/scripts/myclass.wren`
-
-```dart
-foreign class MyClass {
-    construct new(){}
-    foreign add(x, y)
-    foreign callDyn(v)
-    foreign prop=(value) // Setter for the `prop` property
-    foreign prop // Getter for the `prop` property
-}
-```
+Wrenegade generated wren foreign classes will be generated at `{project_root}/bindings/wren/`, but it will be available at `foreign/` at runtime;
 
 Create a main entry point to your Wren program:
 
 `{project_root}/scripts/main.wren`
 
 ```js
-import "myclass" for MyClass
+import "foreign/myclass" for MyClass  // This will import 'myclass' module from '{project_root}/bindings/wren/myclass'
 
 var mclass = MyClass.new()
 mclass.add(5, 40)
+
 mclass.callDyn("test_string")
 mclass.callDyn(1080)
 mclass.callDyn(mclass)
+
+mclass.graphicsBeginFill(0x00FFFF,  1)
 
 System.print(mclass.prop)
 mclass.prop = "hello world"
 
 System.print(mclass.prop)
+
+System.print(mclass.superProp)
+
+mclass.superProp = "super yada!"
+
+System.print(mclass.superProp)
 ```
 
 Run your Wren script from Haxe:

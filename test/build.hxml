@@ -4,13 +4,15 @@
 
 -dce std
 -lib yaml
-# -lib lime
-# -lib openfl
+
 
 -main test.Test
+
+# list of standard haxe packages that we need
 Type
 Std
 
+# list of Haxe classes we need to generate bindings for
 myclass.MyClass
 myclass.subpack.Hello
 
@@ -23,6 +25,5 @@ myclass.subpack.Hello
 -cpp cpp/
 
 -D mac
--D lime
 -D HXCPP_M64
 #-D HXCPP_VERBOSE

@@ -76,7 +76,7 @@ class Wrenegade {
 		for (module in modules) {
 			var cls = module.replace("c/", "").split("/")[module.replace("c/", "").split("/").length - 1];
 			var sig = module.replace("c/", "").replace("/", "_").replace('_${cls}', "");
-			var path = 'bindings/${module}';
+			var path = '${bindingsDir}/${module}';
 			FileSystem.createDirectory(path);
 			wren_cbindings.add('#include "${module}/${cls}.h"\n');
 			if (pack_sigs.exists(sig)) {
@@ -104,6 +104,7 @@ class Wrenegade {
 		wren_cbindings.add("namespace wrenegade {");
 		wren_bindings.add("namespace wrenegade {");
 		wren_cbindings.add("\n");
+		wren_bindings.add('static const char* BIND_PATH = "${bindingsDir}/wren";\n');
 		wren_bindings.add("\n");
 		wren_bindings.add('void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods);');
 		wren_cbindings.add('void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {');
@@ -111,8 +112,9 @@ class Wrenegade {
 
 		for (pack in pack_sigs.keys()) {
 			var mod = pack_sigs.get(pack);
+			var module = 'foreign/${pack.replace("_", "/")}';
 			wren_cbindings.add("\t");
-			wren_cbindings.add('if (strcmp(module, "${pack}") == 0){');
+			wren_cbindings.add('if (strcmp(module, "${module}") == 0){');
 
 			for (i in 0...mod.length) {
 				wren_cbindings.add("\n");
@@ -151,9 +153,10 @@ class Wrenegade {
 
 		for (pack in pack_sigs.keys()) {
 			var mod = pack_sigs.get(pack);
+			var module = 'foreign/${pack.replace("_", "/")}';
 			wren_cbindings.add("\n");
 			wren_cbindings.add("\t");
-			wren_cbindings.add('if (strcmp(module, "${pack}") == 0){');
+			wren_cbindings.add('if (strcmp(module, "${module}") == 0){');
 
 			for (i in 0...mod.length) {
 				wren_cbindings.add("\n");
@@ -298,9 +301,7 @@ class Wrenegade {
 										var foreignFunc = "static void ";
 										foreignFunc += funcName;
 										foreignFunc += "(WrenVM *vm);";
-										if (foreignConstructorDec.indexOf(foreignFunc) != -1) {
-											// foreignConstructorDec[foreignFunc] = foreignFunc;
-										} else {
+										if (foreignConstructorDec.indexOf(foreignFunc) == -1) {
 											foreignConstructorDec.push(foreignFunc);
 											packageMap.set(foreignFunc, moduleName.replace(className, ""));
 										}
@@ -409,24 +410,24 @@ class Wrenegade {
 		if (Reflect.hasField(Context.getLocalClass().get(), "superClass")) {
 			if (Context.getLocalClass().get().superClass != null
 				&& Context.getLocalClass().get().superClass.t.get().module != "wren.WrenClass") {
-				createBindSuperClass(bindCPath, cpath, Context.getLocalClass(), className, moduleName, bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec, packageMap,
-					runInclude.bind(bindCPath, className, includes[0], foreignFuncsDec, content),
-					genContent.bind(moduleName, bindCModules, 
-						bindCPath, content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap, bindCClassArgsMap, bindClassSignatureMap, foreignFuncsDec, foreignConstructorDec, packageMap));
+				createBindSuperClass(bindCPath, cpath, Context.getLocalClass(), className, moduleName, bindMethodMap, bindCMethodMap, bindSignatureMap,
+					foreignFuncsDec, packageMap,
+					genContent.bind(moduleName,
+						bindCModules, bindCPath, content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap, bindCClassArgsMap,
+						bindClassSignatureMap, foreignFuncsDec, foreignConstructorDec, packageMap));
 				return;
 			} else {
-				
-				genContent(moduleName, bindCModules, bindCPath, content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap, bindCClassArgsMap, bindClassSignatureMap, foreignFuncsDec, foreignConstructorDec, packageMap);
+				genContent(moduleName, bindCModules, bindCPath, content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap,
+					bindCClassArgsMap, bindClassSignatureMap, foreignFuncsDec, foreignConstructorDec, packageMap);
 				return;
 			}
 		}
 	}
 
-	private static function genContent(moduleName:String, bindCModules:Map<String, String> , bindCPath:String, content:StringBuf, includes:Array<String>, className:String,
-			bindMethodMap:Map<String, Array<String>>, bindCMethodMap:Map<String, String>, bindSignatureMap:Map<String, String>, bindCClassArgsMap:Map<String, Array<String>>, bindClassSignatureMap:Map<String, String>, foreignFuncsDec:Array<String>, foreignConstructorDec:Array<String>,
-			packageMap:Map<String, String>) {
-
-		
+	private static function genContent(moduleName:String, bindCModules:Map<String, String>, bindCPath:String, content:StringBuf, includes:Array<String>,
+			className:String, bindMethodMap:Map<String, Array<String>>, bindCMethodMap:Map<String, String>, bindSignatureMap:Map<String, String>,
+			bindCClassArgsMap:Map<String, Array<String>>, bindClassSignatureMap:Map<String, String>, foreignFuncsDec:Array<String>,
+			foreignConstructorDec:Array<String>, packageMap:Map<String, String>) {
 		var cModule = moduleName.replace(".", "::");
 
 		content.add('#include "${className}.h"');
@@ -447,12 +448,13 @@ class Wrenegade {
 			if (includes.indexOf(inc) == -1) {
 				content.add('#include <${inc.replace(".", "/").replace("static ", "")}.h>');
 				content.add("\n");
-				content.add('static WrenHandle* ${inc.replace(".", "_").replace("static ", "")}_handle;');
-				content.add("\n");
+				// We don't need Wren Handles yet.
+				// content.add('static WrenHandle* ${inc.replace(".", "_").replace("static ", "")}_handle;');
+				// content.add("\n");
 				includes.push(inc);
 			}
 		}
-		
+
 		content.add("\n");
 		content.add('namespace ${includes[0].replace(".", "_").replace("static ", "")}_functions {');
 		content.add("\n");
@@ -572,6 +574,7 @@ class Wrenegade {
 			content.add("}");
 			content.add("\n");
 		}
+		var constructorParamSize = 0;
 		for (func in foreignConstructorDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var params:Array<String> = bindCClassArgsMap.get(sig);
@@ -601,16 +604,18 @@ class Wrenegade {
 			content.add("\n");
 			content.add("}");
 			content.add("\n");
+			constructorParamSize = params.length;
 		}
 		content.add("\n");
 		content.add("\n");
 		content.add('WrenForeignMethodFn bindMethod(const char* signature) {');
 		content.add("\n");
+		var signatures = [];
 		for (func in foreignFuncsDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			content.add("\t");
 			content.add('if (strcmp(signature, "${bindSignatureMap.get(sig)}") == 0) return ${sig};');
-		
+			signatures.push(bindSignatureMap.get(sig));
 			content.add("\n");
 		}
 		content.add("\t");
@@ -623,22 +628,27 @@ class Wrenegade {
 		content.add('void bindClass(WrenForeignClassMethods* methods) {');
 		content.add("\n");
 
+		var hasConstructor = false;
 		for (func in foreignConstructorDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var funct = bindClassSignatureMap.get(sig);
 			content.add("\t");
 			content.add('methods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \treturn;');
 			content.add("\n");
+
+			hasConstructor = true;
 		}
 		content.add("}");
 		content.add("\n");
 		content.add("}");
 		content.add("\n");
-	
 
 		sys.io.File.saveContent('${bindCPath}/${className}.cpp', content.toString());
 
 		runInclude(bindCPath, className, includes[0], foreignFuncsDec, content);
+
+		var module = includes[0].replace("." + className, "").replace(".", "_").replace("static ", "");
+		genWrenExterns(className, module, signatures, hasConstructor, constructorParamSize);
 	}
 
 	private static function runInclude(bindCPath, className, _includes:String, foreignFuncsDec:Array<String>, content:StringBuf) {
@@ -681,8 +691,8 @@ class Wrenegade {
 		sys.io.File.saveContent('${bindCPath}/${className}.h', include.toString());
 	}
 
-	private static function createBindSuperClass(bindCPath:String, cpath:String, localClass:Ref<ClassType>, className:String, moduleName:String, bindMethodMap, bindCMethodMap,
-			bindSignatureMap, foreignFuncsDec, packageMap:Map<String, String>, ?cb, ?cb2) {
+	private static function createBindSuperClass(bindCPath:String, cpath:String, localClass:Ref<ClassType>, className:String, moduleName:String,
+			bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec, packageMap:Map<String, String>, ?cb) {
 		if (localClass.get().superClass.t.get().module != "wren.WrenClass") {
 			var fields = localClass.get().superClass.t.get().fields.get();
 
@@ -794,11 +804,68 @@ class Wrenegade {
 		if (Reflect.hasField(localClass.get().superClass.t.get(), "superClass")) {
 			if (localClass.get().superClass.t.get().superClass != null
 				&& localClass.get().superClass.t.get().superClass.t.get().module != "wren.WrenClass") {
-				createBindSuperClass(bindCPath, cpath, localClass, className, moduleName, bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec, packageMap, cb, cb2);
+				createBindSuperClass(bindCPath, cpath, localClass, className, moduleName, bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec,
+					packageMap, cb);
 			} else {
-				cb2();
+				cb();
 			}
 		}
+	}
+
+	private static function genWrenExterns(className:String, module:String, signatures:Array<String>, hasConstructor:Bool = false,
+			constructorParamsSize:Int) {
+		var wrenPath = '${bindingsDir}/wren';
+		var path = "";
+		if(module.indexOf("_") != -1){
+			var spl = module.split("_");
+			module = spl[spl.length - 1];
+			spl.splice(spl.length - 1, 1);
+			path = spl.join("/");
+			trace(path);
+			wrenPath = '${bindingsDir}/wren/${path}';
+		} else {
+			path = '${bindingsDir}/wren/${module}';
+		}
+		
+		
+		FileSystem.createDirectory(wrenPath);
+
+		var wren = new StringBuf();
+		wren.add('foreign class ${className} {\n');
+
+		if (hasConstructor) {
+			var constructorArgs = [];
+			for (i in 0...constructorParamsSize) {
+				constructorArgs.push('arg$i');
+			}
+			wren.add('\tconstruct new(${constructorArgs.join(", ")}){}\n');
+		}
+
+		for (sig in signatures) {
+			var method = sig.replace(className + ".", "");
+			var r = ~/_|,_/g;
+			var count = 0;
+			if (r.match(method)) {
+				var arg = r.map(method, (reg) -> {
+					var match = r.matched(0);
+					switch (match) {
+						case "_":
+							count++;
+							return 'arg$count';
+						case ",_":
+							count++;
+							return ',arg$count';
+						case _: return "";
+					}
+				});
+				wren.add('\tforeign ${arg}\n');
+			} else {
+				wren.add('\tforeign ${method}\n');
+			}
+		}
+		wren.add("}\n");
+
+		sys.io.File.saveContent('${wrenPath}/${module}.wren', wren.toString());
 	}
 
 	private static function reset() {

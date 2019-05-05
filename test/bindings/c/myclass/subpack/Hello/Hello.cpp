@@ -8,7 +8,6 @@
 
 
 #include <myclass/subpack/Hello.h>
-static WrenHandle* myclass_subpack_Hello_handle;
 
 namespace myclass_subpack_Hello_functions {
 

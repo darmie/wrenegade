@@ -8,7 +8,6 @@
 
 
 #include <myclass/MyClass.h>
-static WrenHandle* myclass_MyClass_handle;
 
 namespace myclass_MyClass_functions {
 

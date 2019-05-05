@@ -1,6 +1,6 @@
-import "myclass" for MyClass
-import "myclass_subpack" for Hello
-import "test" for Test
+import "foreign/myclass" for MyClass
+import "foreign/myclass/subpack" for Hello
+import "foreign/test" for Test
 
 class TestClass {
     construct new() {

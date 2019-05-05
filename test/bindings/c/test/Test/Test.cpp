@@ -8,7 +8,6 @@
 
 
 #include <test/Test.h>
-static WrenHandle* test_Test_handle;
 
 namespace test_Test_functions {
 

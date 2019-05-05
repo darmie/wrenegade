@@ -44,18 +44,59 @@ inline std::string fileToString(const std::string &file)
 	return buffer.str();
 }
 
+inline bool replaceString(std::string &str, const std::string &from, const std::string &to)
+{
+	size_t start_pos = str.find(from);
+	if (start_pos == std::string::npos)
+		return false;
+	str.replace(start_pos, from.length(), to);
+	return true;
+}
+
 void writeFn(WrenVM *vm, const char *text)
 {
 	printf("%s", std::string(text).c_str());
 	fflush(stdout);
 }
 
+inline bool bindings_exist (const std::string& name) {
+    if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }   
+}
+
 char *loadModuleFn(WrenVM *vm, const char *mod)
 {
+
+	std::stringstream base;
+	
+
+	std::string str(mod);
+	
+	if (replaceString(str, "foreign", ""))
+	{
+		
+		base << wrenegade::BIND_PATH << str;
+		std::stringstream f;
+		f << base.str() << ".wren";
+
+		printf("%s\n", f.str().c_str());
+		if (bindings_exist(f.str()))
+		{
+			printf("%s\n", base.str().c_str());
+			mod = base.str().c_str();
+			
+		}
+	}
 
 	std::string path(mod);
 	path += ".wren";
 	std::string source;
+
+	
 
 	try
 	{
@@ -88,12 +129,14 @@ WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char
 {
 	std::stringstream fullName;
 
-	if(isStatic) {
+	if (isStatic)
+	{
 		fullName << "static ";
 	}
-	
+
 	fullName << className << "." << signature;
-	
+	// printf("%s\n",module);
+	// printf("%s\n",fullName.str().c_str());
 	return wrenegade::bindMethod(module, className, fullName.str().c_str());
 };
 
@@ -150,8 +193,6 @@ static void *setSlotNewForeign(WrenVM *vm, int slot, int classSlot, size_t size)
 {
 	return wrenSetSlotNewForeign(vm, 0, 0, 8);
 }
-
-
 
 } // namespace wren
 
