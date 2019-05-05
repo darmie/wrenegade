@@ -83,12 +83,9 @@ char *loadModuleFn(WrenVM *vm, const char *mod)
 		std::stringstream f;
 		f << base.str() << ".wren";
 
-		printf("%s\n", f.str().c_str());
 		if (bindings_exist(f.str()))
 		{
-			printf("%s\n", base.str().c_str());
 			mod = base.str().c_str();
-			
 		}
 	}
 
