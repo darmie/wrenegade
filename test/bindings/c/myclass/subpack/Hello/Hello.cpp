@@ -1,6 +1,6 @@
 #include "Hello.h"
 
-#include <linc_helper.h>
+#include <wrenegade_helper.h>
 
 #ifndef INCLUDED_type
 #include <Type.h>
@@ -13,8 +13,8 @@ namespace myclass_subpack_Hello_functions {
 
 static void myclass_subpack_hello_shout(WrenVM *vm){
 	
-	auto arg0 = linc::helper::getFromSlot(vm, 1);
-	::myclass::subpack::Hello inst = (::myclass::subpack::Hello)linc::helper::getFromSlot(vm, 0);
+	auto arg0 = wrenegade::helper::getFromSlot(vm, 1);
+	::myclass::subpack::Hello inst = (::myclass::subpack::Hello)wrenegade::helper::getFromSlot(vm, 0);
 	inst->shout(arg0);
 }
 static void myclass_subpack_hello_new(WrenVM *vm){

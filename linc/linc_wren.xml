@@ -6,7 +6,7 @@
         <compilerflag value='-I${WREN}'/>
         <compilerflag value='-I${WREN}/src/include'/>
         <file name='${LINC_WREN_PATH}/linc/linc_wren.cpp' />
-        <file name='${LINC_WREN_PATH}/linc/linc_helper.cpp' />
+        <file name='${LINC_WREN_PATH}/linc/wrenegade_helper.cpp' />
        
 
     </files>
@@ -41,7 +41,7 @@
 
     <target id="haxe">
         <files id="wren" />
-        <precompiledheader name="linc_helper" dir="${LINC_WREN_PATH}/linc" />
+        <precompiledheader name="wrenegade_helper" dir="${LINC_WREN_PATH}/linc" />
     </target>
 
 </xml>

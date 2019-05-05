@@ -434,7 +434,7 @@ class Wrenegade {
 		content.add("\n");
 		content.add("\n");
 
-		content.add('#include <linc_helper.h>');
+		content.add('#include <wrenegade_helper.h>');
 		content.add("\n");
 
 		content.add("\n");
@@ -471,7 +471,7 @@ class Wrenegade {
 			if (params.length != 0) {
 				for (i in 0...params.length) {
 					content.add("\t");
-					content.add('auto ${params[i]} = linc::helper::getFromSlot(vm, ${i + 1});');
+					content.add('auto ${params[i]} = wrenegade::helper::getFromSlot(vm, ${i + 1});');
 					content.add("\n");
 				}
 				content.add("\t");
@@ -484,7 +484,7 @@ class Wrenegade {
 					if (method == null) {
 						content.add(bindCMethodMap.get(sig));
 					} else {
-						content.add('::${cModule} inst = (::${cModule})linc::helper::getFromSlot(vm, 0);');
+						content.add('::${cModule} inst = (::${cModule})wrenegade::helper::getFromSlot(vm, 0);');
 						content.add("\n");
 						content.add("\t");
 						content.add('${'inst->' + method}');
@@ -510,7 +510,7 @@ class Wrenegade {
 							if (method == null) {
 								content.add('${bindCMethodMap.get(sig.replace("_get", ""))} = *value;');
 							} else {
-								content.add('::${cModule} inst = (::${cModule})linc::helper::getFromSlot(vm, 0);\n');
+								content.add('::${cModule} inst = (::${cModule})wrenegade::helper::getFromSlot(vm, 0);\n');
 								content.add("\t");
 								content.add('auto val = inst->${method};');
 							}
@@ -520,7 +520,7 @@ class Wrenegade {
 							content.add("::ValueType type = ::Type_obj::_hx_typeof(val);");
 							content.add("\n");
 							content.add("\t");
-							content.add('linc::helper::saveToSlot(vm, 0, val, type);');
+							content.add('wrenegade::helper::saveToSlot(vm, 0, val, type);');
 							content.add("\n");
 						}
 					case "set":
@@ -535,14 +535,14 @@ class Wrenegade {
 							content.add('::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);');
 							content.add("\n");
 							content.add("\t");
-							content.add('*value = linc::helper::getFromSlot(vm, 1);');
+							content.add('*value = wrenegade::helper::getFromSlot(vm, 1);');
 							content.add("\n");
 
 							content.add("\t");
 							if (method == null) {
 								content.add('${bindCMethodMap.get(sig.replace("_set", ""))} = *value;');
 							} else {
-								content.add('::${cModule} inst = (::${cModule})linc::helper::getFromSlot(vm, 0);\n');
+								content.add('::${cModule} inst = (::${cModule})wrenegade::helper::getFromSlot(vm, 0);\n');
 								content.add("\t");
 								content.add('inst->${method} = *value;');
 							}
@@ -560,7 +560,7 @@ class Wrenegade {
 								if (method == null) {
 									content.add(bindCMethodMap.get(sig));
 								} else {
-									content.add('::${cModule} inst = (::${cModule})linc::helper::getFromSlot(vm, 0);');
+									content.add('::${cModule} inst = (::${cModule})wrenegade::helper::getFromSlot(vm, 0);');
 									content.add("\n");
 									content.add("\t");
 									content.add('${'inst->' + method}');
@@ -587,7 +587,7 @@ class Wrenegade {
 			content.add("\n");
 			for (i in 0...params.length) {
 				content.add("\t");
-				content.add('auto value = linc::helper::getFromSlot(vm, ${i + 1});');
+				content.add('auto value = wrenegade::helper::getFromSlot(vm, ${i + 1});');
 				content.add("\n");
 				content.add("\t");
 				content.add('::Dynamic ${params[i]} = (::Dynamic) value;');

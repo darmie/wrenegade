@@ -1,5 +1,5 @@
 #include "./linc_wren.h"
-#include "./linc_helper.h"
+#include "./wrenegade_helper.h"
 
 #include <hxcpp.h>
 
@@ -139,7 +139,7 @@ WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char
 
 void writeErr(WrenVM *vm, WrenErrorType errorType, const char *module, int line, const char *message)
 {
-	linc::helper::writeErr(vm, errorType, module, line, message);
+	wrenegade::helper::writeErr(vm, errorType, module, line, message);
 }
 
 WrenVM *newVM(Dynamic _config)

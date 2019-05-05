@@ -1,5 +1,5 @@
-#ifndef _LINC_HELPER_H_
-#define _LINC_HELPER_H_
+#ifndef _WRENEGADE_HELPER_H_
+#define _WRENEGADE_HELPER_H_
 
 #include <hxcpp.h>
 
@@ -13,7 +13,7 @@ extern "C"
 }
 
 
-namespace linc
+namespace wrenegade
 {
 
 namespace helper

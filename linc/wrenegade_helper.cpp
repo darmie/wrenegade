@@ -1,5 +1,5 @@
 
-#include "linc_helper.h"
+#include "wrenegade_helper.h"
 
 #ifndef INCLUDED_Std
 #include <Std.h>
@@ -10,7 +10,7 @@
 
 #include <sstream>
 
-namespace linc
+namespace wrenegade
 {
 
 namespace helper
