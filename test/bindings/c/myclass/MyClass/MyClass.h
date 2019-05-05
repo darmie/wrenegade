@@ -18,8 +18,8 @@ static void myclass_myclass_superprop_set(WrenVM *vm);
 static void myclass_myclass_superprop_get(WrenVM *vm);
 static void myclass_myclass_graphicsbeginfill(WrenVM *vm);
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature);
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods);
+WrenForeignMethodFn bindMethod(const char* signature);
+void bindClass(WrenForeignClassMethods* methods);
 }
 
 #endif

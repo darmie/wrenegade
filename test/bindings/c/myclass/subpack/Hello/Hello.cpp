@@ -26,17 +26,13 @@ static void myclass_subpack_hello_new(WrenVM *vm){
 }
 
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature) {
-	if (strcmp(module, "myclass_subpack") == 0){		if (strcmp(signature, "Hello.shout(_)") == 0) return myclass_subpack_hello_shout;	}
+WrenForeignMethodFn bindMethod(const char* signature) {
+	if (strcmp(signature, "Hello.shout(_)") == 0) return myclass_subpack_hello_shout;
 	return NULL;
 }
 
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {
-	if (strcmp(module, "myclass_subpack") == 0){
-		if (strcmp(className, "Hello") == 0) { 
-			methods->allocate = myclass_subpack_hello_new; 
- 			return; 
-		}
-	}
+void bindClass(WrenForeignClassMethods* methods) {
+	methods->allocate = myclass_subpack_hello_new; 
+ 	return;
 }
 }

@@ -74,23 +74,19 @@ static void myclass_myclass_new(WrenVM *vm){
 }
 
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature) {
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.prop=(_)") == 0) return myclass_myclass_prop_set;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.prop") == 0) return myclass_myclass_prop_get;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.add(_,_)") == 0) return myclass_myclass_add;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.callDyn(_)") == 0) return myclass_myclass_calldyn;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.superProp=(_)") == 0) return myclass_myclass_superprop_set;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.superProp") == 0) return myclass_myclass_superprop_get;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MyClass.graphicsBeginFill(_,_)") == 0) return myclass_myclass_graphicsbeginfill;	}
+WrenForeignMethodFn bindMethod(const char* signature) {
+	if (strcmp(signature, "MyClass.prop=(_)") == 0) return myclass_myclass_prop_set;
+	if (strcmp(signature, "MyClass.prop") == 0) return myclass_myclass_prop_get;
+	if (strcmp(signature, "MyClass.add(_,_)") == 0) return myclass_myclass_add;
+	if (strcmp(signature, "MyClass.callDyn(_)") == 0) return myclass_myclass_calldyn;
+	if (strcmp(signature, "MyClass.superProp=(_)") == 0) return myclass_myclass_superprop_set;
+	if (strcmp(signature, "MyClass.superProp") == 0) return myclass_myclass_superprop_get;
+	if (strcmp(signature, "MyClass.graphicsBeginFill(_,_)") == 0) return myclass_myclass_graphicsbeginfill;
 	return NULL;
 }
 
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {
-	if (strcmp(module, "myclass") == 0){
-		if (strcmp(className, "MyClass") == 0) { 
-			methods->allocate = myclass_myclass_new; 
- 			return; 
-		}
-	}
+void bindClass(WrenForeignClassMethods* methods) {
+	methods->allocate = myclass_myclass_new; 
+ 	return;
 }
 }

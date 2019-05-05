@@ -12,8 +12,8 @@ extern "C"
 namespace test_Test_functions  {
 static void test_test_add(WrenVM *vm);
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature);
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods);
+WrenForeignMethodFn bindMethod(const char* signature);
+void bindClass(WrenForeignClassMethods* methods);
 }
 
 #endif

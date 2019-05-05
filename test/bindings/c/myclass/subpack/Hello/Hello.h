@@ -12,8 +12,8 @@ extern "C"
 namespace myclass_subpack_Hello_functions  {
 static void myclass_subpack_hello_shout(WrenVM *vm);
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature);
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods);
+WrenForeignMethodFn bindMethod(const char* signature);
+void bindClass(WrenForeignClassMethods* methods);
 }
 
 #endif

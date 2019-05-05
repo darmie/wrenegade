@@ -20,11 +20,11 @@ static void test_test_add(WrenVM *vm){
 }
 
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature) {
-	if (strcmp(module, "test") == 0){		if (strcmp(signature, "static Test.add(_,_)") == 0) return test_test_add;	}
+WrenForeignMethodFn bindMethod(const char* signature) {
+	if (strcmp(signature, "static Test.add(_,_)") == 0) return test_test_add;
 	return NULL;
 }
 
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {
+void bindClass(WrenForeignClassMethods* methods) {
 }
 }

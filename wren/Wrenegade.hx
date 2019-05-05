@@ -129,7 +129,7 @@ class Wrenegade {
 				wren_cbindings.add("\t");
 				wren_cbindings.add("\t");
 				wren_cbindings.add("\t");
-				wren_cbindings.add('${cls}(module, className, methods); return;');
+				wren_cbindings.add('${cls}(methods); return;');
 				wren_cbindings.add("\n");
 				wren_cbindings.add("\t");
 				wren_cbindings.add("\t");
@@ -153,7 +153,6 @@ class Wrenegade {
 			var mod = pack_sigs.get(pack);
 			wren_cbindings.add("\n");
 			wren_cbindings.add("\t");
-			wren_cbindings.add("\t");
 			wren_cbindings.add('if (strcmp(module, "${pack}") == 0){');
 
 			for (i in 0...mod.length) {
@@ -171,7 +170,7 @@ class Wrenegade {
 				wren_cbindings.add("\t");
 				wren_cbindings.add("\t");
 				wren_cbindings.add("\t");
-				wren_cbindings.add('return ${cls}(module, signature);');
+				wren_cbindings.add('return ${cls}(signature);');
 				wren_cbindings.add("\n");
 				wren_cbindings.add("\t");
 				wren_cbindings.add("\t");
@@ -443,7 +442,6 @@ class Wrenegade {
 		content.add("\n");
 		content.add('#endif\n');
 		content.add("\n");
-		// content.add('#include <wren/Helper.h>');
 		content.add("\n");
 		for (inc in bindCModules) {
 			if (includes.indexOf(inc) == -1) {
@@ -454,7 +452,7 @@ class Wrenegade {
 				includes.push(inc);
 			}
 		}
-		// content.add("namespace bindings {");
+		
 		content.add("\n");
 		content.add('namespace ${includes[0].replace(".", "_").replace("static ", "")}_functions {');
 		content.add("\n");
@@ -606,31 +604,13 @@ class Wrenegade {
 		}
 		content.add("\n");
 		content.add("\n");
-		content.add('WrenForeignMethodFn bindMethod(const char* module, const char* signature) {');
+		content.add('WrenForeignMethodFn bindMethod(const char* signature) {');
 		content.add("\n");
 		for (func in foreignFuncsDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
-			var _sig = sig.split("_");
-			var module = "";
-		
-			if (packageMap.exists(func)) {
-				var pack = packageMap.get(func).split(".");
-				pack.pop();
-
-				if (pack.length == 1) {
-					module = pack[0];
-				} else if (pack.length > 1) {
-					module = pack.join("_");
-				}
-			}
-
-			content.add("\t");
-			content.add('if (strcmp(module, "$module") == 0){');
-			content.add("\t");
 			content.add("\t");
 			content.add('if (strcmp(signature, "${bindSignatureMap.get(sig)}") == 0) return ${sig};');
-			content.add("\t");
-			content.add("}");
+		
 			content.add("\n");
 		}
 		content.add("\t");
@@ -640,44 +620,21 @@ class Wrenegade {
 
 		content.add("\n");
 		content.add("\n");
-		content.add('void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {');
+		content.add('void bindClass(WrenForeignClassMethods* methods) {');
 		content.add("\n");
 
 		for (func in foreignConstructorDec) {
 			var sig = func.replace("static void ", "").replace("(WrenVM *vm);", "");
 			var funct = bindClassSignatureMap.get(sig);
-			var _f = funct.split(".");
-			var _sig = sig.split("_");
-
-			var module = "";
-			if (packageMap.exists(func)) {
-				var pack = packageMap.get(func).split(".");
-				pack.pop();
-
-				if (pack.length == 1) {
-					module = pack[0];
-				} else if (pack.length > 1) {
-					module = pack.join("_");
-				}
-			}
-
 			content.add("\t");
-			content.add('if (strcmp(module, "$module") == 0){');
-			content.add("\n");
-			content.add("\t");
-			content.add("\t");
-			content
-				.add('if (strcmp(className, "${funct.indexOf("static") != -1 ? funct.replace("static ", "") : _f[_f.length - 1]}") == 0) { \n\t\t\tmethods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \t\t\treturn; \n\t\t}');
-			content.add("\n");
-			content.add("\t");
-			content.add("}");
+			content.add('methods->allocate = ${funct.indexOf("static") != -1 ? "NULL" : sig}; \n \treturn;');
 			content.add("\n");
 		}
 		content.add("}");
 		content.add("\n");
 		content.add("}");
 		content.add("\n");
-		// content.add("}");
+	
 
 		sys.io.File.saveContent('${bindCPath}/${className}.cpp', content.toString());
 
@@ -696,10 +653,6 @@ class Wrenegade {
 		include.add('#include <haxe/Log.h>\n');
 		include.add('#endif');
 		include.add("\n");
-		// include.add('#ifndef INCLUDED_Type\n');
-		// include.add('#include <Type.h>\n');
-		// include.add('#endif');
-		// include.add("\n");
 		include.add('extern "C"');
 		include.add("\n");
 		include.add('{');
@@ -708,7 +661,6 @@ class Wrenegade {
 		include.add("\n");
 		include.add('}');
 		include.add("\n");
-		// include.add("namespace bindings {");
 		include.add("\n");
 		include.add('namespace ${_includes.replace(".", "_").replace("static ", "")}_functions  {');
 		include.add("\n");
@@ -717,19 +669,16 @@ class Wrenegade {
 			include.add("\n");
 		}
 		include.add("\n");
-		include.add('WrenForeignMethodFn bindMethod(const char* module, const char* signature);');
+		include.add('WrenForeignMethodFn bindMethod(const char* signature);');
 		include.add("\n");
-		include.add("void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods);");
+		include.add("void bindClass(WrenForeignClassMethods* methods);");
 		include.add("\n");
 		include.add('}');
 		include.add("\n");
-		// include.add('}');
 		include.add("\n");
 		include.add("#endif");
 
 		sys.io.File.saveContent('${bindCPath}/${className}.h', include.toString());
-		//
-		// genContent(content, includes, className, bindMethodMap, bindCMethodMap, bindSignatureMap, foreignFuncsDec);
 	}
 
 	private static function createBindSuperClass(bindCPath:String, cpath:String, localClass:Ref<ClassType>, className:String, moduleName:String, bindMethodMap, bindCMethodMap,

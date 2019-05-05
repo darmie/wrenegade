@@ -43,19 +43,15 @@ static void myclass_mysuperclass_new(WrenVM *vm){
 }
 
 
-WrenForeignMethodFn bindMethod(const char* module, const char* signature) {
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MySuperClass.superProp=(_)") == 0) return myclass_mysuperclass_superprop_set;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MySuperClass.superProp") == 0) return myclass_mysuperclass_superprop_get;	}
-	if (strcmp(module, "myclass") == 0){		if (strcmp(signature, "MySuperClass.graphicsBeginFill(_,_)") == 0) return myclass_mysuperclass_graphicsbeginfill;	}
+WrenForeignMethodFn bindMethod(const char* signature) {
+	if (strcmp(signature, "MySuperClass.superProp=(_)") == 0) return myclass_mysuperclass_superprop_set;
+	if (strcmp(signature, "MySuperClass.superProp") == 0) return myclass_mysuperclass_superprop_get;
+	if (strcmp(signature, "MySuperClass.graphicsBeginFill(_,_)") == 0) return myclass_mysuperclass_graphicsbeginfill;
 	return NULL;
 }
 
-void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {
-	if (strcmp(module, "myclass") == 0){
-		if (strcmp(className, "MySuperClass") == 0) { 
-			methods->allocate = myclass_mysuperclass_new; 
- 			return; 
-		}
-	}
+void bindClass(WrenForeignClassMethods* methods) {
+	methods->allocate = myclass_mysuperclass_new; 
+ 	return;
 }
 }
