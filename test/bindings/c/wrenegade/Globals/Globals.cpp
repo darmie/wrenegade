@@ -1,4 +1,4 @@
-#include "Test.h"
+#include "Globals.h"
 
 #include <wrenegade_helper.h>
 
@@ -7,18 +7,19 @@
 #endif
 
 
-#include <test/Test.h>
+#include <wren/Globals.h>
 
-namespace test_Test_functions {
+namespace wrenegade_Globals_functions {
 
-static void add(WrenVM *vm){
+static void callback(WrenVM *vm){
 	
 
 	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	auto arg0 = wrenegade::helper::getFromSlot(vm, 1);
 	auto arg1 = wrenegade::helper::getFromSlot(vm, 2);
-	auto value = ::test::Test_obj::add(arg0, arg1);
+	auto arg2 = wrenegade::helper::getFromSlot(vm, 3);
+	auto value = ::wren::Globals_obj::callback(arg0, arg1, arg2);
 
 	::Dynamic* val = (::Dynamic*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));
 
@@ -30,7 +31,7 @@ static void add(WrenVM *vm){
 
 
 WrenForeignMethodFn bindMethod(const char* signature) {
-	if (strcmp(signature, "static Test.add(_,_)") == 0) return add;
+	if (strcmp(signature, "static Globals.callback(_,_,_)") == 0) return callback;
 	return NULL;
 }
 

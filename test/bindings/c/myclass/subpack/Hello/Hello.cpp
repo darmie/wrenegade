@@ -11,13 +11,23 @@
 
 namespace myclass_subpack_Hello_functions {
 
-static void myclass_subpack_hello_shout(WrenVM *vm){
+static void shout(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	auto arg0 = wrenegade::helper::getFromSlot(vm, 1);
 	::myclass::subpack::Hello inst = (::myclass::subpack::Hello)wrenegade::helper::getFromSlot(vm, 0);
-	inst->shout(arg0);
+	::Dynamic value = (::Dynamic)inst->shout(arg0);
+
+	::Dynamic* val = (::Dynamic*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));
+
+	std::memcpy(val, &value, sizeof(::Dynamic));
+	::ValueType type = ::Type_obj::_hx_typeof(value);
+	wrenegade::helper::saveToSlot(vm, 0, val, type);
+
 }
-static void myclass_subpack_hello_new(WrenVM *vm){
+static void _new(WrenVM *vm){
 	::myclass::subpack::Hello* constructor = (myclass::subpack::Hello*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::myclass::subpack::Hello));
 	::myclass::subpack::Hello_obj obj;
 	auto data = obj.__new();
@@ -26,12 +36,12 @@ static void myclass_subpack_hello_new(WrenVM *vm){
 
 
 WrenForeignMethodFn bindMethod(const char* signature) {
-	if (strcmp(signature, "Hello.shout(_)") == 0) return myclass_subpack_hello_shout;
+	if (strcmp(signature, "Hello.shout(_)") == 0) return shout;
 	return NULL;
 }
 
 void bindClass(WrenForeignClassMethods* methods) {
-	methods->allocate = myclass_subpack_hello_new; 
+	methods->allocate = _new; 
  	return;
 }
 }

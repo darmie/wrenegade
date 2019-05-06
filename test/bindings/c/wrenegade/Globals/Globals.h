@@ -1,5 +1,5 @@
-#ifndef _bindings_myclass_subpack_Hello_h
-#define _bindings_myclass_subpack_Hello_h
+#ifndef _bindings_wrenegade_Globals_h
+#define _bindings_wrenegade_Globals_h
 #include <hxcpp.h>
 #ifndef INCLUDED_haxe_Log
 #include <haxe/Log.h>
@@ -9,8 +9,8 @@ extern "C"
 #include <wren.h>
 }
 
-namespace myclass_subpack_Hello_functions  {
-static void shout(WrenVM *vm);
+namespace wrenegade_Globals_functions  {
+static void callback(WrenVM *vm);
 
 WrenForeignMethodFn bindMethod(const char* signature);
 void bindClass(WrenForeignClassMethods* methods);

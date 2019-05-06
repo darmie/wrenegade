@@ -2,6 +2,7 @@ import "foreign/myclass" for MyClass
 import "foreign/myclass" for MySuperClass
 import "foreign/myclass/subpack" for Hello
 import "foreign/test" for Test
+import "foreign/wrenegade" for Globals
 
 class TestClass {
     construct new() {
@@ -10,13 +11,15 @@ class TestClass {
     add(x, y){
         System.print(x+y) 
     }
+
+    static callback = (s){
+        System.print(s)
+    }
 }
+
 
 var mclass = MyClass.new()
 var sclass = MySuperClass.new()
-var testClass = TestClass.new()
-System.print(TestClass) 
-testClass.add(5, 6)
 mclass.add(5, 40)
 
 mclass.callDyn("test_string")
@@ -44,8 +47,13 @@ System.print(sclass.superProp)
 
 var hello = Hello.new()
 
-hello.shout("Yippe Kai Yay!!")
 
 
 Test.add(5, 20)
+
+
+var callback = Globals.callback("main", "TestClass", "callback=(_)")
+var c = hello.shout(callback)
+// c.call()
+
 

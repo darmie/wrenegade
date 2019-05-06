@@ -11,7 +11,10 @@
 
 namespace myclass_MyClass_functions {
 
-static void myclass_myclass_prop_set(WrenVM *vm){
+static void prop_set(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);
 	*value = wrenegade::helper::getFromSlot(vm, 1);
@@ -19,7 +22,10 @@ static void myclass_myclass_prop_set(WrenVM *vm){
 	inst->prop = *value;
 }
 
-static void myclass_myclass_prop_get(WrenVM *vm){
+static void prop_get(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	::myclass::MyClass inst = (::myclass::MyClass)wrenegade::helper::getFromSlot(vm, 0);
 	auto val = inst->prop;
@@ -27,22 +33,45 @@ static void myclass_myclass_prop_get(WrenVM *vm){
 	wrenegade::helper::saveToSlot(vm, 0, val, type);
 }
 
-static void myclass_myclass_add(WrenVM *vm){
+static void add(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	auto arg0 = wrenegade::helper::getFromSlot(vm, 1);
 	auto arg1 = wrenegade::helper::getFromSlot(vm, 2);
 	::myclass::MyClass inst = (::myclass::MyClass)wrenegade::helper::getFromSlot(vm, 0);
-	inst->add(arg0, arg1);
+	::Dynamic value = (::Dynamic)inst->add(arg0, arg1);
+
+	::Dynamic* val = (::Dynamic*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));
+
+	std::memcpy(val, &value, sizeof(::Dynamic));
+	::ValueType type = ::Type_obj::_hx_typeof(value);
+	wrenegade::helper::saveToSlot(vm, 0, val, type);
+
 }
 
-static void myclass_myclass_calldyn(WrenVM *vm){
+static void calldyn(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	auto arg0 = wrenegade::helper::getFromSlot(vm, 1);
 	::myclass::MyClass inst = (::myclass::MyClass)wrenegade::helper::getFromSlot(vm, 0);
-	inst->callDyn(arg0);
+	::Dynamic value = (::Dynamic)inst->callDyn(arg0);
+
+	::Dynamic* val = (::Dynamic*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));
+
+	std::memcpy(val, &value, sizeof(::Dynamic));
+	::ValueType type = ::Type_obj::_hx_typeof(value);
+	wrenegade::helper::saveToSlot(vm, 0, val, type);
+
 }
 
-static void myclass_myclass_superprop_set(WrenVM *vm){
+static void superprop_set(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	::Dynamic* value = (::Dynamic*)wrenGetSlotForeign(vm, 1);
 	*value = wrenegade::helper::getFromSlot(vm, 1);
@@ -50,7 +79,10 @@ static void myclass_myclass_superprop_set(WrenVM *vm){
 	inst->superProp = *value;
 }
 
-static void myclass_myclass_superprop_get(WrenVM *vm){
+static void superprop_get(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	::myclass::MyClass inst = (::myclass::MyClass)wrenegade::helper::getFromSlot(vm, 0);
 	auto val = inst->superProp;
@@ -58,14 +90,24 @@ static void myclass_myclass_superprop_get(WrenVM *vm){
 	wrenegade::helper::saveToSlot(vm, 0, val, type);
 }
 
-static void myclass_myclass_graphicsbeginfill(WrenVM *vm){
+static void graphicsbeginfill(WrenVM *vm){
+	
+
+	wrenEnsureSlots(vm, wrenGetSlotCount(vm)+1);
 	
 	auto arg0 = wrenegade::helper::getFromSlot(vm, 1);
 	auto arg1 = wrenegade::helper::getFromSlot(vm, 2);
 	::myclass::MyClass inst = (::myclass::MyClass)wrenegade::helper::getFromSlot(vm, 0);
-	inst->graphicsBeginFill(arg0, arg1);
+	::Dynamic value = (::Dynamic)inst->graphicsBeginFill(arg0, arg1);
+
+	::Dynamic* val = (::Dynamic*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic));
+
+	std::memcpy(val, &value, sizeof(::Dynamic));
+	::ValueType type = ::Type_obj::_hx_typeof(value);
+	wrenegade::helper::saveToSlot(vm, 0, val, type);
+
 }
-static void myclass_myclass_new(WrenVM *vm){
+static void _new(WrenVM *vm){
 	::myclass::MyClass* constructor = (myclass::MyClass*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::myclass::MyClass));
 	::myclass::MyClass_obj obj;
 	auto data = obj.__new();
@@ -74,18 +116,18 @@ static void myclass_myclass_new(WrenVM *vm){
 
 
 WrenForeignMethodFn bindMethod(const char* signature) {
-	if (strcmp(signature, "MyClass.prop=(_)") == 0) return myclass_myclass_prop_set;
-	if (strcmp(signature, "MyClass.prop") == 0) return myclass_myclass_prop_get;
-	if (strcmp(signature, "MyClass.add(_,_)") == 0) return myclass_myclass_add;
-	if (strcmp(signature, "MyClass.callDyn(_)") == 0) return myclass_myclass_calldyn;
-	if (strcmp(signature, "MyClass.superProp=(_)") == 0) return myclass_myclass_superprop_set;
-	if (strcmp(signature, "MyClass.superProp") == 0) return myclass_myclass_superprop_get;
-	if (strcmp(signature, "MyClass.graphicsBeginFill(_,_)") == 0) return myclass_myclass_graphicsbeginfill;
+	if (strcmp(signature, "MyClass.prop=(_)") == 0) return prop_set;
+	if (strcmp(signature, "MyClass.prop") == 0) return prop_get;
+	if (strcmp(signature, "MyClass.add(_,_)") == 0) return add;
+	if (strcmp(signature, "MyClass.callDyn(_)") == 0) return calldyn;
+	if (strcmp(signature, "MyClass.superProp=(_)") == 0) return superprop_set;
+	if (strcmp(signature, "MyClass.superProp") == 0) return superprop_get;
+	if (strcmp(signature, "MyClass.graphicsBeginFill(_,_)") == 0) return graphicsbeginfill;
 	return NULL;
 }
 
 void bindClass(WrenForeignClassMethods* methods) {
-	methods->allocate = myclass_myclass_new; 
+	methods->allocate = _new; 
  	return;
 }
 }

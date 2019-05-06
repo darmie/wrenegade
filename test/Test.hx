@@ -2,7 +2,7 @@
 package test;
 
 import wren.VM;
-
+import wren.Globals;
 
 class Test extends wren.WrenClass {
 
@@ -11,8 +11,9 @@ class Test extends wren.WrenClass {
     }
 
 
-	static public function add(x:Dynamic, y:Dynamic) {
+	static public function add(x:Dynamic, y:Dynamic):Dynamic {
 		trace(x + y);
+		return null;
 	}
 
 
@@ -21,12 +22,17 @@ class Test extends wren.WrenClass {
 		var vm = new VM();
 		try {
 			var err = vm.interpretFile("main", "main.wren");
+			
+
 			if (err != null) {
 				throw err;
 			}
-			vm.stop();
+			
+			// vm.free();
 		} catch (e:Dynamic) {
 			throw e;
 		}
+		// var v = Globals.callback("main", "TestClass", "callback=(_)");
+		// v(["hello World"]);
 	}
 }

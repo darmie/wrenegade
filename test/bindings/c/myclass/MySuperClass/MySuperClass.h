@@ -10,9 +10,9 @@ extern "C"
 }
 
 namespace myclass_MySuperClass_functions  {
-static void myclass_mysuperclass_superprop_set(WrenVM *vm);
-static void myclass_mysuperclass_superprop_get(WrenVM *vm);
-static void myclass_mysuperclass_graphicsbeginfill(WrenVM *vm);
+static void superprop_set(WrenVM *vm);
+static void superprop_get(WrenVM *vm);
+static void graphicsbeginfill(WrenVM *vm);
 
 WrenForeignMethodFn bindMethod(const char* signature);
 void bindClass(WrenForeignClassMethods* methods);

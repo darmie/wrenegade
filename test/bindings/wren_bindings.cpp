@@ -2,9 +2,16 @@
 #include "c/myclass/MySuperClass/MySuperClass.h"
 #include "c/myclass/MyClass/MyClass.h"
 #include "c/test/Test/Test.h"
+#include "c/wrenegade/Globals/Globals.h"
 #include "wren_bindings.h"
 namespace wrenegade {
 void bindClass(const char* module, const char* className, WrenForeignClassMethods* methods) {
+	if (strcmp(module, "foreign/wrenegade") == 0){
+			
+		if (strcmp(className, "Globals") == 0){
+			::wrenegade_Globals_functions::bindClass(methods); return;
+		}
+	}
 	if (strcmp(module, "foreign/test") == 0){
 			
 		if (strcmp(className, "Test") == 0){
@@ -31,6 +38,13 @@ void bindClass(const char* module, const char* className, WrenForeignClassMethod
 
 }
 WrenForeignMethodFn bindMethod(const char* module, const char *className, const char* signature) {
+
+	if (strcmp(module, "foreign/wrenegade") == 0){
+			
+		if (strcmp(className, "Globals") == 0){
+			return ::wrenegade_Globals_functions::bindMethod(signature);
+		}
+	}
 
 	if (strcmp(module, "foreign/test") == 0){
 			

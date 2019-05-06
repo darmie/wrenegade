@@ -5,13 +5,15 @@ import cpp.RawPointer;
 import haxe.Constraints.Function;
 import cpp.Callable;
 import wren.Helper;
+import wren.Globals;
 
 /**
  * The Wren Virtual Machine
  */
 class VM {
-	public static var instance:wren.WrenVM;
-	private var vm:wren.WrenVM;
+	public static var instance:VM;
+
+	public var vm:wren.WrenVM;
 
 	private static var classes:Array<String> = [];
 
@@ -19,12 +21,12 @@ class VM {
 	 * creates a new Wren virtual machine.
 	 */
 	public function new() {
-
 		this.vm = Wren.newVM();
-		VM.instance = this.vm;
+
+		VM.instance = this;
 	}
 
-	public function stop() {
+	public function free() {
 		Wren.freeVM(this.vm);
 	}
 
@@ -41,22 +43,32 @@ class VM {
 		return this.interpret(module, file);
 	}
 
-	public function variable(name:String):wren.Value {
-		var module = "main";
-		var name = name;
+	public function value(module:String, name:String, signature:String, params:Array<Dynamic>) {
+		trace(params);
 
-		Wren.ensureSlots(this.vm, 1);
+		Wren.ensureSlots(this.vm, 2);
 		Wren.getVariable(this.vm, module, name, 0);
 
-		var value = new Value(vm);
-		value.value = Wren.getSlotHandle(this.vm, 0);
+		var value = new Value(this.vm);
 
-		if (value.value == null) {
-			return null;
+		var rvalue = Wren.getSlotHandle(this.vm, 1);
+
+		var f:wren.WrenHandle = Wren.makeCallHandle(this.vm, signature);
+
+		Wren.ensureSlots(this.vm, (params.length + 2));
+		Wren.setSlotHandle(this.vm, 0, rvalue);
+
+		for (i in 0...params.length) {
+			Helper.saveToSlot(this.vm, i + 1, params[i], Type.typeof(params[i]));
 		}
 
-		return value;
+		var errMsg = wren.Wren.call(this.vm, f);
+		var err = Helper.interpretResultToErr(errMsg);
+
+		if (err != null) {
+			throw err;
+		}
+
+		return value.call.bind(f);
 	}
-
-
 }

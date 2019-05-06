@@ -8,6 +8,7 @@
 		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/myclass/MySuperClass/MySuperClass.cpp" />
 		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/myclass/MyClass/MyClass.cpp" />
 		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/test/Test/Test.cpp" />
+		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/c/wrenegade/Globals/Globals.cpp" />
 		<file name="/Users/damilare/Documents/projects/Wrenegade/test/bindings/wren_bindings.cpp" />
 	</files>
 </xml>

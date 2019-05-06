@@ -1,5 +1,8 @@
 
 #include "wrenegade_helper.h"
+#ifndef INCLUDED_haxe_Log
+#include <haxe/Log.h>
+#endif
 
 #ifndef INCLUDED_Std
 #include <Std.h>
@@ -94,6 +97,16 @@ void saveToSlot(WrenVM *vm, int slot, ::Dynamic value, ::ValueType type)
     case (int)3:
     {
         wrenSetSlotBool(vm, slot, ((bool)(value)));
+    }
+    break;
+    case (int)4: case (int)5:
+    {
+        
+        // ::haxe::Log_obj::trace(type);
+        // ::Dynamic v = wrenGetSlotForeign(vm, 1);
+        // ::Dynamic *constructor = (::Dynamic *)wrenSetSlotNewForeign(vm, 0, 1, sizeof(::Dynamic));
+        // std::memcpy(constructor, &v, sizeof(::Dynamic));
+        // saveToSlot()
     }
     break;
     case (int)6:
@@ -221,4 +234,4 @@ void *setSlotNewForeign(WrenVM *vm, int slot, int classSlot, size_t size)
 
 } // namespace helper
 
-} // namespace linc
+} // namespace wrenegade

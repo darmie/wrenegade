@@ -9,15 +9,17 @@ class MyClass extends MySuperClass {
 		super();
 	}
 
-	public function add(x:Int, y:Int) {
+	public function add(x:Int, y:Int):Dynamic {
 		trace(x + y);
+		return null;
 	}
 
-	public function callDyn(v:Dynamic) {
+	public function callDyn(v:Dynamic):Dynamic {
 		if (Std.is(v, MyClass)) {
 			v.add(5, 8);
 		} else {
 			trace(v);
 		}
+		return null;
 	}
 }

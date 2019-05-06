@@ -9,7 +9,8 @@ import wren.WrenClass;
 class Hello extends WrenClass {
     public function new(){}
 
-    public function shout(s) {
-        trace(s);
+    public function shout(callback):Dynamic {
+        var v = callback(["here"]);
+        return v;
     }
 }

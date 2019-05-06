@@ -18,6 +18,14 @@ namespace linc
 
 namespace wren
 {
+inline bool bindings_exist (const std::string& name) {
+    if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }   
+}
 
 inline bool fileExists(const std::string &file)
 {
@@ -30,8 +38,14 @@ inline std::string fileToString(const std::string &file)
 {
 
 	std::ifstream fin;
+	size_t start_pos = file.find("bindings/wren/wrenegade");
+	bool exists = start_pos != std::string::npos;
+	if (!exists){
+		exists = fileExists(file);
+	} 
+	
 
-	if (!fileExists(file))
+	if (!exists)
 	{
 		throw std::runtime_error("file not found!");
 	}
@@ -59,19 +73,13 @@ void writeFn(WrenVM *vm, const char *text)
 	fflush(stdout);
 }
 
-inline bool bindings_exist (const std::string& name) {
-    if (FILE *file = fopen(name.c_str(), "r")) {
-        fclose(file);
-        return true;
-    } else {
-        return false;
-    }   
-}
+
 
 char *loadModuleFn(WrenVM *vm, const char *mod)
 {
 
 	std::stringstream base;
+	std::stringstream path;
 	
 
 	std::string str(mod);
@@ -82,22 +90,25 @@ char *loadModuleFn(WrenVM *vm, const char *mod)
 		base << wrenegade::BIND_PATH << str;
 		std::stringstream f;
 		f << base.str() << ".wren";
+		
+		if (fileExists(f.str()))
+		{	
+			
+			const char *v = base.str().c_str();
+			mod = v;
 
-		if (bindings_exist(f.str()))
-		{
-			mod = base.str().c_str();
+			path << mod << ".wren";
 		}
+
+	} else {
+		path << mod << ".wren";
 	}
-
-	std::string path(mod);
-	path += ".wren";
-	std::string source;
-
 	
+	std::string source;
 
 	try
 	{
-		source = fileToString(path);
+		source = fileToString(path.str());
 	}
 
 	catch (const std::exception &)
@@ -132,7 +143,7 @@ WrenForeignMethodFn bindForeignMethod(WrenVM *vm, const char *module, const char
 	}
 
 	fullName << className << "." << signature;
-	// printf("%s\n",module);
+
 	// printf("%s\n",fullName.str().c_str());
 	return wrenegade::bindMethod(module, className, fullName.str().c_str());
 };

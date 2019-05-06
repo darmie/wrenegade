@@ -10,13 +10,13 @@ extern "C"
 }
 
 namespace myclass_MyClass_functions  {
-static void myclass_myclass_prop_set(WrenVM *vm);
-static void myclass_myclass_prop_get(WrenVM *vm);
-static void myclass_myclass_add(WrenVM *vm);
-static void myclass_myclass_calldyn(WrenVM *vm);
-static void myclass_myclass_superprop_set(WrenVM *vm);
-static void myclass_myclass_superprop_get(WrenVM *vm);
-static void myclass_myclass_graphicsbeginfill(WrenVM *vm);
+static void prop_set(WrenVM *vm);
+static void prop_get(WrenVM *vm);
+static void add(WrenVM *vm);
+static void calldyn(WrenVM *vm);
+static void superprop_set(WrenVM *vm);
+static void superprop_get(WrenVM *vm);
+static void graphicsbeginfill(WrenVM *vm);
 
 WrenForeignMethodFn bindMethod(const char* signature);
 void bindClass(WrenForeignClassMethods* methods);

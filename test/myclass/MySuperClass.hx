@@ -14,8 +14,9 @@ class MySuperClass  extends WrenClass {
     //    graphics = baseSprite.graphics;
     }
 
-    public function graphicsBeginFill(color:Int, alpha:Float) {
+    public function graphicsBeginFill(color:Int, alpha:Float):Dynamic {
         // graphics.beginFill(color, alpha);
+        return null;
     }
 }
 

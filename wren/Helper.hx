@@ -13,9 +13,12 @@ import Type;
 typedef WrenErr = String;
 
 
+
+
+
 class Helper {
 
-	public static function writeErr(vm:WrenVM, errorType:WrenErrorType,  module:cpp.ConstCharStar, line:Int, message:cpp.ConstCharStar) {
+	public static function writeErr(vm:wren.WrenVM, errorType:WrenErrorType,  module:cpp.ConstCharStar, line:Int, message:cpp.ConstCharStar) {
 		switch errorType {
 			case WrenErrorType.WREN_ERROR_COMPILE:
 				Sys.println('compilation error: ${module.toString()}:${line}: ${message.toString()}');
@@ -37,11 +40,11 @@ class Helper {
 		}
 	}
 
-	public static function getSlotType(vm:WrenVM, slot:Int):WrenType{
+	public static function getSlotType(vm:wren.WrenVM, slot:Int):WrenType{
 		return Wren.getSlotType(vm, slot);
 	}
 
-	public static function saveToSlot(vm:WrenVM, slot:Int, value:Dynamic, type:Type.ValueType):Void {
+	public static function saveToSlot(vm:wren.WrenVM, slot:Int, value:Dynamic, type:Type.ValueType):Void {
 		
 		switch (type) {
 			case TInt:
@@ -71,6 +74,12 @@ class Helper {
 			case TUnknown:{
 					Wren.setSlotNull(vm, slot);
 			}
+			case TFunction | TObject:{
+				// trace(vm);
+				var v = getFromSlot(vm, slot);
+				untyped __cpp__('::Dynamic* constructor = (::Dynamic*)wrenSetSlotNewForeign(vm, 0, 0, sizeof(::Dynamic))');
+				untyped __cpp__('std::memcpy(constructor, &v, sizeof(::Dynamic))');
+			}
 			default:
 				{
 					throw 'don\'t know how to save this to a slot: ${type}';
@@ -78,7 +87,7 @@ class Helper {
 		}
 	}
 
-	public static function getFromSlot(vm:WrenVM, slot:Int):Dynamic {
+	public static function getFromSlot(vm:wren.WrenVM, slot:Int):Dynamic {
 		function getValue(vm, slot):Dynamic {
 			return switch (Wren.getSlotType(vm, slot)) {
 				case WrenType.WREN_TYPE_BOOL: {
@@ -112,7 +121,7 @@ class Helper {
 					}
 				default: {
 						throw "unreachable";
-					}
+				}
 			}
 		}
 
