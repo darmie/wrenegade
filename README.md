@@ -33,7 +33,7 @@ Edit the `build.hxml` file in your project root to reference wrenegade:
 Add these lines at the top of the file: _(replace `{project_root}` with the relative path to your project)_
 
 ```yaml
--cp {project_root}/wrenegade/wren
+-cp {project_root}/wrenegade/
 -cp {project_root}/src ## path to your project source, let's assume it's ./src
 
 -dce std  # Dead code elimination. Reduce overrall package size to only stuff we need. https://haxe.org/manual/cr-dce.html
